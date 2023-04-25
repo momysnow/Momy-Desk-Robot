@@ -1,7 +1,4 @@
 # Cubot
-Cubot
-
-# Cubot
 
 ## Cartelle
     - Robot
