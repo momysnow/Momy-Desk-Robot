@@ -35,5 +35,20 @@ void setup() {
 
 void loop() {
   // Draw the eyes
-  tft.pushImage(22, 48, eyesWidth, eyesHeight, Open_eyes);
+  tft.pushImage(32, 57, eyesWidth, eyesHeight, Occhi_apenti);
+  delay(2000);
+  tft.pushImage(32, 57, eyesWidth, eyesHeight, occhi_26);
+  delay(50);
+  tft.pushImage(32, 57, eyesWidth, eyesHeight, occhi_27);
+  delay(50);
+  tft.pushImage(32, 57, eyesWidth, eyesHeight, occhi_28);
+  delay(50);
+  tft.pushImage(32, 57, eyesWidth, eyesHeight, occhi_29);
+  delay(150);
+  tft.pushImage(32, 57, eyesWidth, eyesHeight, occhi_28);
+  delay(50);
+  tft.pushImage(32, 57, eyesWidth, eyesHeight, occhi_27);
+  delay(50);
+  tft.pushImage(32, 57, eyesWidth, eyesHeight, occhi_26);
+  delay(50);
 }
