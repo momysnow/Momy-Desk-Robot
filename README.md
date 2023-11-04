@@ -49,6 +49,10 @@ Tutti i pezzi del robot
 [CARTELLA CODICE](/_DRIVE/progetti/2023/Robot/firmware/)
 
 Il codice è in **C** e serve a far funzionare il robot.
+### - Library
+https://github.com/Bodmer/TFT_eSPI.git
+https://github.com/pablomarquez76/AnalogWrite_ESP32.git
+https://github.com/mysensors/MySensorsArduinoExamples/blob/master/libraries/UTFT/Tools/ImageConverter565.exe
 
 ### - Firmware
 #### Esp32-S3-Wroom-1 Arduino
