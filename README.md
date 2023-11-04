@@ -51,11 +51,23 @@ Tutti i pezzi del robot
 Il codice è in **C** e serve a far funzionare il robot.
 
 ### - Firmware
-
-#### Esp32-S3-Wroom-1 Python
-**[GENERIC_S3-20220618-v1.19.1.bin](https://micropython.org/download/GENERIC_S3/)**
-
 #### Esp32-S3-Wroom-1 Arduino
+#### Pins
+##### Servo
+9
+10
+11
+12
+13
+
+##### Screen
+37 > TFT_MOSI
+36 > TFT_SCLK
+35 > TFT_CS
+48 > TFT_DC
+47 > TFT_RST
+21 > TFT_BL
+
 ##### Setup
 - CAMERA_MODEL_ESP32S3_EYE
 - Flash size 8MB
