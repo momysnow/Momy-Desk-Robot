@@ -76,7 +76,7 @@ https://github.com/mysensors/MySensorsArduinoExamples/blob/master/libraries/UTFT
 - CAMERA_MODEL_ESP32S3_EYE
 - Flash size 8MB
 - Partition scheme 8M with spiffs
-- OPI PSRAM
+- QSPI PSRAM
 
 #### - Logica
 
