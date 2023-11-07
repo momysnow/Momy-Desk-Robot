@@ -78,6 +78,17 @@ https://github.com/mysensors/MySensorsArduinoExamples/blob/master/libraries/UTFT
 - Partition scheme 8M with spiffs
 - QSPI PSRAM
 
+## OBIETTIVI
+creare animazione Idle Occhi
+Movimenti Ballo
+Movimenyo Idle
+WakeUp Word
+inviare audio al facebook
+gestire comandi facebook
+feedback di errore
+creare app android
+creare sito
+
 #### - Logica
 
 ```mermaid
