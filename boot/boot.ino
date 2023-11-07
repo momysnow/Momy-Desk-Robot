@@ -1,14 +1,19 @@
 #include <TFT_eSPI.h>  // Hardware-specific library
-// #include "FS.h"
-// #include <SPIFFS.h>  // Include the SPIFFS library
 #include <DHT.h>  // Include the DHT library
+#include "sd_read_write.h"
+#include "SD_MMC.h"
+#include <WiFi.h>
+#include "WifiManager.h"
+
+WifiManager wifiManager;
+
+#define SD_MMC_CMD 38 //Please do not modify it.
+#define SD_MMC_CLK 39 //Please do not modify it. 
+#define SD_MMC_D0  40 //Please do not modify it.
 
 DHT dht(11, DHT11);
 float temp = 0;
 float humidity = 0;
-
-unsigned int frameRate = 100;                    // Imposta il frame rate desiderato (frame al secondo)
-unsigned int frameDuration = 1000 / frameRate;  // Durata di un frame in millisecondi
 
 TFT_eSPI tft = TFT_eSPI();             // Invoke custom library
 TFT_eSprite eyes = TFT_eSprite(&tft);  // Invoke custom library
@@ -24,49 +29,6 @@ int x_eyeL = (sreenW - eyes_distance * 2 - w_eyes) / 2;
 int y_eyeL = 30 + (sreenH - h_eyes) / 2;
 int x_eyeR = sreenW - ((sreenW - eyes_distance * 2 - w_eyes) / 2);
 int y_eyeR = 30 + (sreenH - h_eyes) / 2;
-
-/*
-struct Animation {
-  unsigned long startTime = 0;
-  unsigned long duration = 0;
-  int currentFrame = 0;
-  bool completed = false;
-  bool (*animationFunction)(int frame, unsigned long duration);
-};
-
-Animation animations[1];
-
-bool close_eyes(int frame, unsigned long duration) {
-  int timeCloseEyes = 200;
-  int totFrameTransition = duration - (timeCloseEyes / frameDuration);  // la durata tot in frame meno i frame necessari per 200ms di chiusura occhi
-
-  while (totFrameTransition % 2 == 1) {
-    totFrameTransition--;
-  }
-
-  int h_eye_frame = ((h_eyes - close_h_eyes) / ((totFrameTransition / 2) + 1));  // differenza tra l'altezza dell'occhio aperto e chiuso, diviso la prima metà dei frame + il frame dell'occhio aperto
-
-  if (totFrameTransition / 2 > frame) {
-    // avvio animazione
-    eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - (h_eye_frame * frame), TFT_WHITE);  //l'altezza dell'occhio aperto meno l'altezza di ogni frame * il frame a cui siamo
-    eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - (h_eye_frame * frame), TFT_WHITE);
-  } else if ((totFrameTransition / 2) + (timeCloseEyes / frameDuration) < frame) {
-    // conclusione animazione   
-    eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, close_h_eyes + (h_eye_frame * ((frame - (totFrameTransition / 2)) - (timeCloseEyes / frameDuration))), TFT_WHITE);  // per l'altezza dell'occhio è l'altezza dell'occhio chiuso + l'altezza di ogni frame * il frame a cui siamo meno tutti i frame precedenti
-    eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, close_h_eyes + (h_eye_frame * ((frame - (totFrameTransition / 2)) - (timeCloseEyes / frameDuration))), TFT_WHITE);
-  } else {
-    // animazione centrale
-    // 0.2 sec
-    // rettangolo
-    eyes.fillRect(x_eyeL, y_eyeL, w_eyes, close_h_eyes, TFT_WHITE);
-    eyes.fillRect(x_eyeR, y_eyeR, w_eyes, close_h_eyes, TFT_WHITE);
-  }
-
-  Serial.print("frame: ");
-  Serial.println(frame);
-  return frame >= duration;
-}
-*/
 
 void close_eyes() {
 
@@ -207,16 +169,18 @@ void sleep_eyes() {
 void setup() {
   dht.begin();
   Serial.begin(115200);
-  /*
-  if (!SPIFFS.begin()) {
-    Serial.println("Failed to mount file system");
-  }
 
-  animations[0].animationFunction = close_eyes;
-  animations[0].duration = 500 / frameDuration;
-  animations[0].currentFrame = 0;
-  animations[0].completed = false;
-*/
+  SD_MMC.setPins(SD_MMC_CLK, SD_MMC_CMD, SD_MMC_D0);
+  if (!SD_MMC.begin("/sdcard", true, true, SDMMC_FREQ_DEFAULT, 5)) {
+    Serial.println("Card Mount Failed");
+    return;
+  }
+  uint8_t cardType = SD_MMC.cardType();
+  if(cardType == CARD_NONE){
+    Serial.println("No SD_MMC card attached");
+    return;
+  }
+  
   tft.begin();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
@@ -228,40 +192,31 @@ void setup() {
   tft.fillScreen(TFT_BLACK);
   delay(500);
 
+  if (!wifiManager.connect_wifi("ssid", "password")) {
+    Serial.println("Failed to connect to Wi-Fi, starting access point");
+    wifiManager.start_ap();
+    wifiManager.create_web_server();
+    tft.drawString("Cubot",40,40,5);
+    tft.drawString("Psw: Cubot1234",30,60,10);
+  } else {
+    Serial.println("Connected to Wi-Fi");
+    wifiManager.create_web_server();
+    tft.drawString("GAME OVER",40,40,4);
+  }
+
   eyes.createSprite(240, 240);
 }
 
 void loop() {
-  unsigned long currentMillis = millis();
+  wifiManager.handleClient();
 
   eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_WHITE);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_WHITE);
   eyes.pushSprite(0, 0);
-  delay(20);
   eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_BLACK);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_BLACK);
-
   delay(1000);
-/*
-  if (animations[0].completed) {
-    animations[0].startTime = currentMillis;
-    animations[0].currentFrame = 0;
-    animations[0].duration = 500 / frameDuration;
-    animations[0].completed = false;
-  }
-*/
-
-/*
-  animations[0].completed = animations[0].animationFunction(animations[0].currentFrame, animations[0].duration);
-*/
-
   wink_eyes();
-
-/*
-  if (currentMillis - animations[0].startTime >= (animations[0].currentFrame + 1) * frameDuration) {
-    animations[0].currentFrame++;
-  }
-*/
 
   dht.readTemperature();
   dht.readHumidity();
