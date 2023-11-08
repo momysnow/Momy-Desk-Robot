@@ -135,22 +135,22 @@ void wink_eyes() {
   eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_WHITE);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_WHITE);
   eyes.pushSprite(0, 0);
-  delay(20);
+  delay(10);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_BLACK);
 
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_WHITE);
   eyes.pushSprite(0, 0);
-  delay(20);
+  delay(10);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_BLACK);
 
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_WHITE);
   eyes.pushSprite(0, 0);
-  delay(20);
+  delay(10);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_BLACK);
 
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_WHITE);
   eyes.pushSprite(0, 0);
-  delay(20);
+  delay(10);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_BLACK);
 
   // animazione centrale
@@ -164,22 +164,22 @@ void wink_eyes() {
   // conclusione animazione
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_WHITE);
   eyes.pushSprite(0, 0);
-  delay(20);
+  delay(10);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_BLACK);
 
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_WHITE);
   eyes.pushSprite(0, 0);
-  delay(20);
+  delay(10);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_BLACK);
 
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_WHITE);
   eyes.pushSprite(0, 0);
-  delay(20);
+  delay(10);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_BLACK);
 
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_WHITE);
   eyes.pushSprite(0, 0);
-  delay(20);
+  delay(10);
   eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_BLACK);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_BLACK);
 }
@@ -195,10 +195,18 @@ void sleep_eyes() {
 }
 
 void setup() {
-  dht.begin();
   Serial.begin(115200);
 
-  //create a task
+  tft.begin();
+  tft.setRotation(0);
+  tft.fillScreen(TFT_BLACK);
+  tft.setSwapBytes(true);
+
+  tft.pushImage(30, 60, logoWidth, logoHeight, logo_momysnow);
+
+  dht.begin();
+
+  //create a task Client
   xTaskCreatePinnedToCore(
     handleClientTask, /* Task function. */
     "Client",         /* name of task. */
@@ -209,7 +217,7 @@ void setup() {
     0                 /* pin task to core 0 */
   );
 
-  //create a task
+  //create a task Animation
   xTaskCreatePinnedToCore(
     AnimationTask, /* Task function. */
     "Animation",   /* name of task. */
@@ -220,7 +228,7 @@ void setup() {
     0              /* pin task to core 0 */
   );
 
-  //create a task
+  //create a task DHT11
   xTaskCreatePinnedToCore(
     DHT11Task,    /* Task function. */
     "DHT11",      /* name of task. */
@@ -229,17 +237,6 @@ void setup() {
     1,            /* priority of the task */
     &DHT11sensor, /* Task handle to keep track of created task */
     0             /* pin task to core 0 */
-  );
-
-  //create a task
-  xTaskCreatePinnedToCore(
-    CheckServoTask, /* Task function. */
-    "CheckServo",   /* name of task. */
-    10000,          /* Stack size of task */
-    NULL,           /* parameter of the task */
-    9,              /* priority of the task */
-    &CheckServo,    /* Task handle to keep track of created task */
-    0               /* pin task to core 0 */
   );
 
   SD_MMC.setPins(SD_MMC_CLK, SD_MMC_CMD, SD_MMC_D0);
@@ -288,16 +285,9 @@ void setup() {
   baseServo.attach(servoPin, 1000, 2000);
   baseServo.write(90);
 
-  tft.begin();
-  tft.setRotation(0);
-  tft.fillScreen(TFT_BLACK);
-  tft.setSwapBytes(true);
-
-  tft.pushImage(30, 60, logoWidth, logoHeight, logo_momysnow);
   delay(2000);
 
   //TEXT
-  tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Set the font color AND the background color
   tft.setTextWrap(true);                   // Wrap on width
 
@@ -327,6 +317,8 @@ void setup() {
     int centerY1 = ((tft.height() - largeTextHeight * 3) / 2) + largeTextHeight;
     int centerY2 = ((tft.height() - largeTextHeight * 3) / 2) + largeTextHeight * 2;
 
+    tft.fillScreen(TFT_BLACK);
+
     // Print the large text centered on the screen
     tft.setCursor(centerX, centerY);
     tft.println("Cubot");
@@ -354,6 +346,8 @@ void setup() {
     int centerY = (tft.height() - largeTextHeight * 3) / 2;
     int centerY1 = ((tft.height() - largeTextHeight * 3) / 2) + largeTextHeight;
     int centerY2 = ((tft.height() - largeTextHeight * 3) / 2) + largeTextHeight * 2;
+
+    tft.fillScreen(TFT_BLACK);
 
     // Print the large text centered on the screen
     tft.setCursor(centerX, centerY);
@@ -401,32 +395,6 @@ void DHT11Task(void* param) {
     dht.readTemperature();
     dht.readHumidity();
     delay(300000);  // 5min
-  }
-}
-
-void CheckServoTask(void* param) {
-  Servo servos[] = { headServo, pushLServo, pushRServo, rotateLServo, rotateRServo, baseServo };
-  int lastPositions[] = { 0, 0, 0, 0, 0, 0 };  // Inizializza con le posizioni iniziali dei servomotori.
-
-  while (true) {
-    for (int i = 0; i < 6; i++) {
-      int currentPosition = servos[i].read();
-      if (currentPosition == lastPositions[i]) {
-        // Il servo è bloccato, poiché la posizione non cambia.
-        //Serial.print("Servo bloccato sul pin: ");
-        //Serial.println(i);
-
-        // Puoi aggiungere qui un'azione per gestire il blocco del servo.
-        // Ad esempio, puoi spegnere il servo o inviare un allarme.
-
-        // Nel nostro esempio, blocciamo il servo impostando la posizione a un valore sicuro (ad esempio, 90 gradi).
-        servos[i].write(90);
-      }
-
-      lastPositions[i] = currentPosition;
-    }
-
-    delay(50);
   }
 }
 
