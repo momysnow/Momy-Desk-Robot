@@ -1,5 +1,5 @@
 #include <TFT_eSPI.h>  // Hardware-specific library
-#include <DHT.h>  // Include the DHT library
+#include <DHT.h>       // Include the DHT library
 #include "sd_read_write.h"
 #include "SD_MMC.h"
 #include <ESP32Servo.h>
@@ -16,17 +16,9 @@ TaskHandle_t CheckServo;
 
 WebServer server(80);
 
-// Dichiarazione delle reti Wi-Fi conosciute
-const char *knownNetworks[][2] = {
-  { "SSID1", "Password1" },
-  { "SSID2", "Password2" }
-  // Aggiungi altre reti conosciute qui
-};
-int numKnownNetworks = sizeof(knownNetworks) / sizeof(knownNetworks[0]);
-
-#define SD_MMC_CMD 38 //Please do not modify it.
-#define SD_MMC_CLK 39 //Please do not modify it. 
-#define SD_MMC_D0  40 //Please do not modify it.
+#define SD_MMC_CMD 38  //Please do not modify it.
+#define SD_MMC_CLK 39  //Please do not modify it.
+#define SD_MMC_D0 40   //Please do not modify it.
 
 DHT dht(11, DHT11);
 float temp = 0;
@@ -41,7 +33,7 @@ Servo baseServo;
 
 int pos = 0;
 int servoPin = 18;
-int lastPosition = -1; // Inizializzato a un valore impossibile
+int lastPosition = -1;  // Inizializzato a un valore impossibile
 
 TFT_eSPI tft = TFT_eSPI();             // Invoke custom library
 TFT_eSprite eyes = TFT_eSprite(&tft);  // Invoke custom library
@@ -100,14 +92,14 @@ void close_eyes() {
   // animazione centrale
   // 0.2 sec
   // rettangolo
-  eyes.fillRect(x_eyeL-30, y_eyeL, w_eyes+30, close_h_eyes, TFT_WHITE);
-  eyes.fillRect(x_eyeR-30, y_eyeR, w_eyes+30, close_h_eyes, TFT_WHITE);
+  eyes.fillRect(x_eyeL - 30, y_eyeL, w_eyes + 30, close_h_eyes, TFT_WHITE);
+  eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_WHITE);
   eyes.pushSprite(0, 0);
   delay(350);
-  eyes.fillRect(x_eyeL-30, y_eyeL, w_eyes+30, close_h_eyes, TFT_BLACK);
-  eyes.fillRect(x_eyeR-30, y_eyeR, w_eyes+30, close_h_eyes, TFT_BLACK);
+  eyes.fillRect(x_eyeL - 30, y_eyeL, w_eyes + 30, close_h_eyes, TFT_BLACK);
+  eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_BLACK);
 
-  // conclusione animazione   
+  // conclusione animazione
   eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 40, TFT_WHITE);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_WHITE);
   eyes.pushSprite(0, 0);
@@ -121,7 +113,7 @@ void close_eyes() {
   delay(20);
   eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 15, TFT_BLACK);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_BLACK);
-  
+
   eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 5, TFT_WHITE);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_WHITE);
   eyes.pushSprite(0, 0);
@@ -164,10 +156,10 @@ void wink_eyes() {
   // animazione centrale
   // 0.2 sec
   // rettangolo
-  eyes.fillRect(x_eyeR-30, y_eyeR, w_eyes+30, close_h_eyes, TFT_WHITE);
+  eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_WHITE);
   eyes.pushSprite(0, 0);
   delay(350);
-  eyes.fillRect(x_eyeR-30, y_eyeR, w_eyes+30, close_h_eyes, TFT_BLACK);
+  eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_BLACK);
 
   // conclusione animazione
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_WHITE);
@@ -179,7 +171,7 @@ void wink_eyes() {
   eyes.pushSprite(0, 0);
   delay(20);
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_BLACK);
-  
+
   eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_WHITE);
   eyes.pushSprite(0, 0);
   delay(20);
@@ -196,58 +188,58 @@ void sleep_eyes() {
   // animazione centrale
   // 0.2 sec
   // rettangolo
-  eyes.fillRect(x_eyeR-30, y_eyeR, w_eyes+30, close_h_eyes, TFT_WHITE);
+  eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_WHITE);
   eyes.pushSprite(0, 0);
   delay(350);
-  eyes.fillRect(x_eyeR-30, y_eyeR, w_eyes+30, close_h_eyes, TFT_BLACK);
+  eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_BLACK);
 }
 
 void setup() {
   dht.begin();
   Serial.begin(115200);
-  
+
   //create a task
   xTaskCreatePinnedToCore(
     handleClientTask, /* Task function. */
-    "Client", /* name of task. */
-    10000,  /* Stack size of task */
-    NULL, /* parameter of the task */
-    10,  /* priority of the task */
-    &Client,  /* Task handle to keep track of created task */
-    0 /* pin task to core 0 */ 
-  );
-  
-  //create a task
-  xTaskCreatePinnedToCore(
-    AnimationTask, /* Task function. */
-    "Animation", /* name of task. */
-    10000,  /* Stack size of task */
-    NULL, /* parameter of the task */
-    9,  /* priority of the task */
-    &Animation,  /* Task handle to keep track of created task */
-    0 /* pin task to core 0 */ 
+    "Client",         /* name of task. */
+    10000,            /* Stack size of task */
+    NULL,             /* parameter of the task */
+    10,               /* priority of the task */
+    &Client,          /* Task handle to keep track of created task */
+    0                 /* pin task to core 0 */
   );
 
   //create a task
   xTaskCreatePinnedToCore(
-    DHT11Task, /* Task function. */
-    "DHT11", /* name of task. */
-    10000,  /* Stack size of task */
-    NULL, /* parameter of the task */
-    1,  /* priority of the task */
-    &DHT11sensor,  /* Task handle to keep track of created task */
-    0 /* pin task to core 0 */ 
+    AnimationTask, /* Task function. */
+    "Animation",   /* name of task. */
+    10000,         /* Stack size of task */
+    NULL,          /* parameter of the task */
+    9,             /* priority of the task */
+    &Animation,    /* Task handle to keep track of created task */
+    0              /* pin task to core 0 */
+  );
+
+  //create a task
+  xTaskCreatePinnedToCore(
+    DHT11Task,    /* Task function. */
+    "DHT11",      /* name of task. */
+    10000,        /* Stack size of task */
+    NULL,         /* parameter of the task */
+    1,            /* priority of the task */
+    &DHT11sensor, /* Task handle to keep track of created task */
+    0             /* pin task to core 0 */
   );
 
   //create a task
   xTaskCreatePinnedToCore(
     CheckServoTask, /* Task function. */
-    "CheckServo", /* name of task. */
-    10000,  /* Stack size of task */
-    NULL, /* parameter of the task */
-    9,  /* priority of the task */
-    &CheckServo,  /* Task handle to keep track of created task */
-    0 /* pin task to core 0 */ 
+    "CheckServo",   /* name of task. */
+    10000,          /* Stack size of task */
+    NULL,           /* parameter of the task */
+    9,              /* priority of the task */
+    &CheckServo,    /* Task handle to keep track of created task */
+    0               /* pin task to core 0 */
   );
 
   SD_MMC.setPins(SD_MMC_CLK, SD_MMC_CMD, SD_MMC_D0);
@@ -259,6 +251,12 @@ void setup() {
   if (cardType == CARD_NONE) {
     Serial.println("No SD_MMC card attached");
     return;
+  }
+
+  if (!existFile(SD_MMC, "/knownNetworks.csv")) {
+    //file inesistente
+    // crea file
+    writeFile(SD_MMC, "/knownNetworks.csv", "");
   }
 
   ESP32PWM::allocateTimer(0);
@@ -296,17 +294,18 @@ void setup() {
   tft.setSwapBytes(true);
 
   tft.pushImage(30, 60, logoWidth, logoHeight, logo_momysnow);
+  delay(2000);
 
   //TEXT
   tft.fillScreen(TFT_BLACK);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK); // Set the font color AND the background color
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Set the font color AND the background color
   tft.setTextWrap(true);                   // Wrap on width
 
   // Load the large font
   tft.loadFont(AA_FONT_LARGE);
 
   //WIFI
-  const char* ssid = "YourSSID";  // Replace with your WiFi SSID
+  const char* ssid = "YourSSID";          // Replace with your WiFi SSID
   const char* password = "YourPassword";  // Replace with your WiFi password
 
   if (!connect_wifi(ssid, password)) {
@@ -314,11 +313,11 @@ void setup() {
     start_ap();
     create_web_server();
     //TEXT
-    int ATextWidth = tft.textWidth("Cubot"); // Get the width of the large text
-    int BTextWidth = tft.textWidth("Psw:"); // Get the width of the large text
-    int CTextWidth = tft.textWidth("Cubot1234"); // Get the width of the large text
+    int ATextWidth = tft.textWidth("Cubot");      // Get the width of the large text
+    int BTextWidth = tft.textWidth("Psw:");       // Get the width of the large text
+    int CTextWidth = tft.textWidth("Cubot1234");  // Get the width of the large text
 
-    int largeTextHeight = tft.fontHeight();          // Get the height of the large text
+    int largeTextHeight = tft.fontHeight();  // Get the height of the large text
 
     // Calculate the coordinates to center the text
     int centerX = (tft.width() - ATextWidth) / 2;
@@ -340,13 +339,13 @@ void setup() {
   } else {
     Serial.println("Connected to Wi-Fi");
     create_web_server();
-    
-    //TEXT
-    int ATextWidth = tft.textWidth("Connected"); // Get the width of the large text
-    int BTextWidth = tft.textWidth("to"); // Get the width of the large text
-    int CTextWidth = tft.textWidth("Wi-Fi"); // Get the width of the large text
 
-    int largeTextHeight = tft.fontHeight();          // Get the height of the large text
+    //TEXT
+    int ATextWidth = tft.textWidth("Connected");  // Get the width of the large text
+    int BTextWidth = tft.textWidth("to");         // Get the width of the large text
+    int CTextWidth = tft.textWidth("Wi-Fi");      // Get the width of the large text
+
+    int largeTextHeight = tft.fontHeight();  // Get the height of the large text
 
     // Calculate the coordinates to center the text
     int centerX = (tft.width() - ATextWidth) / 2;
@@ -367,14 +366,14 @@ void setup() {
     delay(5000);
   }
 
-  tft.unloadFont(); // Remove the font to recover memory used
+  tft.unloadFont();  // Remove the font to recover memory used
 
   tft.fillScreen(TFT_BLACK);
   delay(500);
   eyes.createSprite(240, 240);
 }
 
-void handleClientTask(void *param) {
+void handleClientTask(void* param) {
   while (true) {
     // Handle client requests here
     server.handleClient();
@@ -383,7 +382,7 @@ void handleClientTask(void *param) {
   }
 }
 
-void AnimationTask(void *param) {
+void AnimationTask(void* param) {
   while (true) {
     eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_WHITE);
     eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_WHITE);
@@ -397,37 +396,34 @@ void AnimationTask(void *param) {
   }
 }
 
-void DHT11Task(void *param) {
+void DHT11Task(void* param) {
   while (true) {
     dht.readTemperature();
     dht.readHumidity();
-    delay(300000); // 5min
+    delay(300000);  // 5min
   }
 }
 
-void CheckServoTask(void *param) {
-  Servo servos[] = {headServo, pushLServo, pushRServo, rotateLServo, rotateRServo, baseServo};
-  int lastPositions[] = {0, 0, 0, 0, 0, 0}; // Inizializza con le posizioni iniziali dei servomotori.
+void CheckServoTask(void* param) {
+  Servo servos[] = { headServo, pushLServo, pushRServo, rotateLServo, rotateRServo, baseServo };
+  int lastPositions[] = { 0, 0, 0, 0, 0, 0 };  // Inizializza con le posizioni iniziali dei servomotori.
 
-  while (true)
-  {
-    for (int i = 0; i < 6; i++)
-    {
-        int currentPosition = servos[i].read();
-        if (currentPosition == lastPositions[i])
-        {
-            // Il servo è bloccato, poiché la posizione non cambia.
-            //Serial.print("Servo bloccato sul pin: ");
-            //Serial.println(i);
-      
-            // Puoi aggiungere qui un'azione per gestire il blocco del servo.
-            // Ad esempio, puoi spegnere il servo o inviare un allarme.
-      
-            // Nel nostro esempio, blocciamo il servo impostando la posizione a un valore sicuro (ad esempio, 90 gradi).
-            servos[i].write(90);
-        }
+  while (true) {
+    for (int i = 0; i < 6; i++) {
+      int currentPosition = servos[i].read();
+      if (currentPosition == lastPositions[i]) {
+        // Il servo è bloccato, poiché la posizione non cambia.
+        //Serial.print("Servo bloccato sul pin: ");
+        //Serial.println(i);
 
-        lastPositions[i] = currentPosition;
+        // Puoi aggiungere qui un'azione per gestire il blocco del servo.
+        // Ad esempio, puoi spegnere il servo o inviare un allarme.
+
+        // Nel nostro esempio, blocciamo il servo impostando la posizione a un valore sicuro (ad esempio, 90 gradi).
+        servos[i].write(90);
+      }
+
+      lastPositions[i] = currentPosition;
     }
 
     delay(50);
@@ -496,13 +492,12 @@ void start_ap() {
 
 void create_web_server() {
   server.on("/", HTTP_GET, handle_root);
-  // Define other routes here
+  server.on("/wifi", HTTP_GET, handle_wifi);
+  server.on("/save", HTTP_POST, handle_save);
 
   server.begin();
   Serial.println("Web server started");
 }
-
-
 
 void onRoot(void (*handler)()) {
   server.on("/", handler);
@@ -514,5 +509,34 @@ void onNotFound(void (*handler)()) {
 
 void handle_root() {
   String html = "<html><body><h1>ESP32 Web Server</h1>";
+  server.send(200, "text/html", html);
+}
+
+void handle_wifi() {
+  String html = "<html><body><h1>Configura la rete Wi-Fi</h1>";
+  html += "<form method='post' action='/save'>";
+  html += "SSID: <input type='text' name='ssid'><br>";
+  html += "Password: <input type='password' name='password'><br>";
+  html += "<input type='submit' value='Salva'></form>";
+  html += "</body></html>";
+
+  server.send(200, "text/html", html);
+}
+
+void handle_save() {
+  if (server.hasArg("ssid") && server.hasArg("password")) {
+    String ssid = server.arg("ssid");
+    String password = server.arg("password");
+
+    // Chiama la funzione findSSIDInFile per cercare l'SSID nel file
+    if (!findSSIDInFile(SD_MMC, "/knownNetworks.csv", ssid.c_str())) {
+      // Fai qualcosa se l'SSID non è stato trovato
+      // Append the new network to the knownNetworks file
+      String dataToAppend = ssid + "," + password + "\n";
+      appendFile(SD_MMC, "/knownNetworks.csv", dataToAppend.c_str());
+    }
+  }
+
+  String html = "<html><body><h1>Credenziali Wi-Fi salvate con successo</h1></body></html>";
   server.send(200, "text/html", html);
 }
