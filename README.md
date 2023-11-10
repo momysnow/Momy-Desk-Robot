@@ -78,8 +78,8 @@ https://github.com/mysensors/MySensorsArduinoExamples/blob/master/libraries/UTFT
 - Partition scheme 8M with spiffs
 - QSPI PSRAM
 
-#### API WIT.AI
-curl -X POST -H "Authorization: Bearer WXDGHVYAYIDCVOOKZIUTUSFMUESGCBFH" \ -H "Content-Type: audio/wav" \ --data-binary "@file.wav" \ "https://api.wit.ai/speech"
+## API WIT.AI
+curl -X POST -H "Authorization: Bearer WXDGHVYAYIDCVOOKZIUTUSFMUESGCBFH" -H "Content-Type: audio/wav" --data-binary "@file.wav" "https://api.wit.ai/speech"
 
 ## OBIETTIVI
 creare animazione Idle Occhi
