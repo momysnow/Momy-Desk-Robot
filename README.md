@@ -1,18 +1,8 @@
-# Cubot
+<div align="center">
+    <img src="https://github.com/momysnow/Momy-Desk-Robot/blob/23ec66313f0c9b1030bf521e6e0c987154239661/image/logo.png" alt="Momy logo" height="300">
+</div>
 
-## Cartelle
-    - Robot
-    	 - firmware
-    		 - cubot_0.1v
-    	 - applicazioni
-    		 - android
-    			 - app
-    			 - utilities
-    		 - ios
-    		 - windows
-    	 - gcode
-    	 - utilities_code
-    	 - Freenove_ESP32_S3_WROOM_Board-main
+# Momy
 
 ## Componenti
 
