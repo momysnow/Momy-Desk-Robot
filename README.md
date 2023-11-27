@@ -3,51 +3,50 @@
     <h1>Momy - Desk Robot</h1>
 </div>
 
-Benvenuti nella repository del progetto Momy, un desk robot all'avanguardia progettato per offrire una vasta gamma di funzionalità che migliorano l'interazione umano-macchina. Momy è dotato di avanzate capacità sensoriali e di elaborazione che lo rendono un compagno ideale per varie attività quotidiane.
+Welcome to the repository of the Momy project, a cutting-edge desk robot designed to provide a wide range of features that enhance human-machine interaction. Momy is equipped with advanced sensory and processing capabilities, making it an ideal companion for various daily activities.
 <div align="center">
     <img src="https://github.com/momysnow/Momy-Desk-Robot/blob/9342445bfc0cd3d265c79a3d2945b9640494709c/image/render_cubot_v5_sfondo.png" alt="Momy logo">
 </div>
 
-### Caratteristiche Principali
-#### 1. Visione Avanzata
-La telecamera integrata permette a Momy di percepire e interpretare l'ambiente circostante, aprendo la porta a una serie di applicazioni, tra cui il riconoscimento facciale.
+### Key Features
+#### 1. Advanced Vision
+The integrated camera allows Momy to perceive and interpret the surrounding environment, opening the door to a range of applications, including facial recognition.
 
-#### 2. Ascolto Attivo
-Grazie al microfono integrato, Momy è in grado di ascoltare e comprendere gli input audio. Questa funzionalità non solo consente di interagire vocalmente con il robot ma apre anche la porta a applicazioni di riconoscimento vocale.
+#### 2. Active Listening
+With the integrated microphone, Momy can listen and understand audio inputs. This feature not only enables vocal interaction with the robot but also opens the door to voice recognition applications.
 
-#### 3. Risposta Sonora
-La cassa integrata non solo consente a Momy di rispondere vocalmente, ma offre anche la possibilità di produrre una varietà di suoni per arricchire l'esperienza interattiva.
+#### 3. Sound Response
+The built-in speaker not only allows Momy to respond vocally but also provides the ability to produce a variety of sounds to enrich the interactive experience.
 
-#### 4. Feedback Visivo
-Lo schermo incorporato fornisce feedback visivo all'utente, consentendo a Momy di comunicare in modo efficace attraverso testo, grafici e altro ancora.
+#### 4. Visual Feedback
+The built-in screen provides visual feedback to the user, allowing Momy to communicate effectively through text, graphics, and more.
 
-#### 5. Mobilità Intelligente
-Momy può muovere diverse parti del suo corpo, garantendo una presenza fisica dinamica e interattiva.
+#### 5. Intelligent Mobility
+Momy can move various parts of its body, ensuring a dynamic and interactive physical presence.
 
-#### 6. Monitoraggio Ambientale
-Un termometro integrato misura la temperatura interna e l'umidità, offrendo un'ulteriore dimensione di consapevolezza ambientale e rimuovendo la possibilità di danni causati dalle temperature elevate o dall'umidità eccessiva, mandando il robot in protezione e segnalando il problema all'utente.
+#### 6. Environmental Monitoring
+An integrated thermometer measures internal temperature and humidity, offering an additional dimension of environmental awareness and eliminating the possibility of damage caused by high temperatures or excessive humidity. In such cases, the robot enters protection mode and notifies the user of the issue.
 
-#### 7. Sistema di Alimentazione Ottimizzato
-Le batterie interne permettono a Momy di operare senza fili, con un modulo di gestione della ricarica per una maggiore convenienza.
+#### 7. Optimized Power System
+Internal batteries enable Momy to operate wirelessly, with a recharge management module for added convenience.
 
-#### 8. Controllo Remoto con ESP32S3
-Utilizzando l'ESP32S3, Momy può essere controllato in modo remoto, navigare su Internet e gestire compiti complessi come la conversione dell'audio in testo.
+#### 8. Remote Control with ESP32S3
+Using ESP32S3, Momy can be remotely controlled, browse the Internet, and handle complex tasks such as audio-to-text conversion.
 
-### Possibilità di Sviluppo Futuro
-Il progetto Momy è aperto a ulteriori sviluppi. Alcune possibili estensioni includono l'integrazione con assistenti vocali come Alexa, l'invio di immagini della telecamera a un server per il riconoscimento facciale e molte altre.
+### Future Development Possibilities
+The Momy project is open to further developments. Some possible extensions include integration with voice assistants like Alexa, sending camera images to a server for facial recognition, and many more.
 
-### Documentazione e Istruzioni
+### Documentation and Instructions
+For further details on configuration, installation, and use of Momy, refer to the Robot Documentation.
 
-- Per ulteriori dettagli sulla configurazione, l'installazione e l'utilizzo di Momy, consulta la [Documentazione del Robot](link_documentazione).
+For detailed assembly and feature instructions, consult the Instruction Booklet.
 
-- Per istruzioni dettagliate sull'assemblaggio e le funzionalità, consulta il [Libretto di Istruzioni](link_libretto_istruzioni).
+### Contributions
+I'm excited to welcome contributions from the community! If you have ideas, suggestions, or wish to contribute to the development of Momy, feel free to join the community and propose your changes.
 
-### Contributi
-Sono entusiasta di accogliere contributi dalla community! Se hai idee, suggerimenti o desideri contribuire allo sviluppo di Momy, sentiti libero di partecipare alla community e proporre le tue modifiche.
+Thank you for exploring the Momy project with me. I'm excited to see how this versatile platform can enrich your daily experience!
 
-Grazie per esplorare il progetto Momy con me. Sono entusiasta di vedere come questa piattaforma versatile può arricchire la tua esperienza quotidiana!
-
-Spero che questa presentazione soddisfi le tue esigenze. Sentiti libero di personalizzarla ulteriormente in base alle caratteristiche e agli obiettivi specifici del tuo progetto.
+I hope this presentation meets your needs. Feel free to customize it further based on the specific features and goals of your project.
 
 ### License
 
