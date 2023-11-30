@@ -37,9 +37,9 @@ Using ESP32S3, Momy can be remotely controlled, browse the Internet, and handle 
 The Momy project is open to further developments. Some possible extensions include integration with voice assistants like Alexa, sending camera images to a server for facial recognition, and many more.
 
 ### Documentation and Instructions
-For further details on configuration, installation, and use of Momy, refer to the Robot Documentation.
+For further details on configuration, installation, and use of Momy, refer to the Robot [Documentation](https://github.com/momysnow/Momy-Desk-Robot/wiki/).
 
-For detailed assembly and feature instructions, consult the Instruction Booklet.
+For detailed assembly and feature instructions, consult the Instruction Booklet(Coming Soon).
 
 ### Contributions
 I'm excited to welcome contributions from the community! If you have ideas, suggestions, or wish to contribute to the development of Momy, feel free to join the community and propose your changes.
