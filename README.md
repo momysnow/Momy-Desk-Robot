@@ -5,7 +5,7 @@
 
 Welcome to the repository of the Momy project, a cutting-edge desk robot designed to provide a wide range of features that enhance human-machine interaction. Momy is equipped with advanced sensory and processing capabilities, making it an ideal companion for various daily activities.
 <div align="center">
-    <img src="https://github.com/momysnow/Momy-Desk-Robot/blob/9342445bfc0cd3d265c79a3d2945b9640494709c/image/render_cubot_v5_sfondo.png" alt="Momy logo">
+    <img src="https://github.com/momysnow/Momy-Desk-Robot/blob/9342445bfc0cd3d265c79a3d2945b9640494709c/image/render_cubot_v5_sfondo.png" alt="Momy robot render">
 </div>
 
 # Key Features
@@ -32,6 +32,10 @@ Internal batteries enable Momy to operate wirelessly, with a recharge management
 
 ### 8. Remote Control with ESP32S3
 Using ESP32S3, Momy can be remotely controlled, browse the Internet, and handle complex tasks such as audio-to-text conversion.
+
+<div align="center">
+    <img src="https://github.com/momysnow/Momy-Desk-Robot/blob/070790c76f335e7289ef9b5fcab0fc42ef72b379/image/front_real.png" alt="Momy robot in reality">
+</div>
 
 # Future Development Possibilities
 The Momy project is open to further developments. Some possible extensions include integration with voice assistants like Alexa, sending camera images to a server for facial recognition, and many more.
