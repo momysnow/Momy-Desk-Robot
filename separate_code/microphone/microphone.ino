@@ -241,8 +241,8 @@ void listSPIFFS(void) {
 
 void wifiConnect(void *pvParameters){
   isWIFIConnected = false;
-  char* ssid = "Wind3 HUB-75BE8C";
-  char* password = "2lqaza64261ig3wa";
+  char* ssid = "ssid"; // enter your wifi network
+  char* password = "password"; // enter your wifi password
 
   WiFi.begin(ssid, password);
   while(WiFi.status() != WL_CONNECTED){
