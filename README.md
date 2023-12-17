@@ -45,6 +45,9 @@ For further details on configuration, installation, and use of Momy, refer to th
 
 For detailed assembly and feature instructions, consult the Instruction Booklet(Coming Soon).
 
+# [Discord Server](https://discord.gg/V63W7n23pe)
+For easier communication and real-time updates on the project's progress, I have created a [Discord server](https://discord.gg/V63W7n23pe)!!
+
 # Contributions
 I'm excited to welcome contributions from the community! If you have ideas, suggestions, or wish to contribute to the development of Momy, feel free to join the community and propose your changes.
 
