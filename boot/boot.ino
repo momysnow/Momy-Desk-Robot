@@ -1,29 +1,41 @@
-#include <TFT_eSPI.h>  // Hardware-specific library
-#include <DHT.h>       // Include the DHT library
+#include "setup.h"
+
+#include <DHT.h>
 #include "sd_read_write.h"
 #include "SD_MMC.h"
 #include <ESP32Servo.h>
+
+#include "animation.h"
+
+#include "microphone.h"
+
+#include "features.h"
 
 #include <Arduino.h>
 #include <WiFi.h>
 #include <EEPROM.h>
 #include <WebServer.h>
 
+// task
 TaskHandle_t Client;
 TaskHandle_t Animation;
 TaskHandle_t DHT11sensor;
 TaskHandle_t CheckServo;
 
+// webserver
 WebServer server(80);
 
+// SD
 #define SD_MMC_CMD 38  //Please do not modify it.
 #define SD_MMC_CLK 39  //Please do not modify it.
 #define SD_MMC_D0 40   //Please do not modify it.
 
-DHT dht(11, DHT11);
+// dht
+DHT dht(dhtPin, DHT11);
 float temp = 0;
 float humidity = 0;
 
+// servo
 Servo headServo;
 Servo pushLServo;
 Servo pushRServo;
@@ -32,213 +44,36 @@ Servo rotateRServo;
 Servo baseServo;
 
 int pos = 0;
-int servoPin = 18;
-int lastPosition = -1;  // Inizializzato a un valore impossibile
-
-TFT_eSPI tft = TFT_eSPI();             // Invoke custom library
-TFT_eSprite eyes = TFT_eSprite(&tft);  // Invoke custom library
-const unsigned int sreenW = 240;
-const unsigned int sreenH = 240;
-
-#include "Logo.h"
-int w_eyes = 40;
-int h_eyes = 70;
-int close_h_eyes = 10;
-int eyes_distance = 30;
-int x_eyeL = (sreenW - eyes_distance * 2 - w_eyes) / 2;
-int y_eyeL = 30 + (sreenH - h_eyes) / 2;
-int x_eyeR = sreenW - ((sreenW - eyes_distance * 2 - w_eyes) / 2);
-int y_eyeR = 30 + (sreenH - h_eyes) / 2;
-
-
-#include "NotoSansBold15.h"
-#include "NotoSansBold36.h"
-
-// The font names are arrays references, thus must NOT be in quotes ""
-#define AA_FONT_SMALL NotoSansBold15
-#define AA_FONT_LARGE NotoSansBold36
-
-void close_eyes() {
-
-  // avvio animazione
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_WHITE);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(20);
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_BLACK);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_BLACK);
-
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 5, TFT_WHITE);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(20);
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 5, TFT_BLACK);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_BLACK);
-
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 15, TFT_WHITE);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(20);
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 15, TFT_BLACK);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_BLACK);
-
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 40, TFT_WHITE);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(20);
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 40, TFT_BLACK);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_BLACK);
-
-  // animazione centrale
-  // 0.2 sec
-  // rettangolo
-  eyes.fillRect(x_eyeL - 30, y_eyeL, w_eyes + 30, close_h_eyes, TFT_WHITE);
-  eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(350);
-  eyes.fillRect(x_eyeL - 30, y_eyeL, w_eyes + 30, close_h_eyes, TFT_BLACK);
-  eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_BLACK);
-
-  // conclusione animazione
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 40, TFT_WHITE);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(20);
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 40, TFT_BLACK);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_BLACK);
-
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 15, TFT_WHITE);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(20);
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 15, TFT_BLACK);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_BLACK);
-
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 5, TFT_WHITE);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(20);
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes - 5, TFT_BLACK);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_BLACK);
-
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_WHITE);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(20);
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_BLACK);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_BLACK);
-}
-
-void wink_eyes() {
-
-  // avvio animazione
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_WHITE);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(10);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_BLACK);
-
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(10);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_BLACK);
-
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(10);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_BLACK);
-
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(10);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_BLACK);
-
-  // animazione centrale
-  // 0.2 sec
-  // rettangolo
-  eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(350);
-  eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_BLACK);
-
-  // conclusione animazione
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(10);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 40, TFT_BLACK);
-
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(10);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 15, TFT_BLACK);
-
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(10);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes - 5, TFT_BLACK);
-
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(10);
-  eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_BLACK);
-  eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_BLACK);
-}
-
-void sleep_eyes() {
-  // animazione centrale
-  // 0.2 sec
-  // rettangolo
-  eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_WHITE);
-  eyes.pushSprite(0, 0);
-  delay(350);
-  eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_BLACK);
-}
+int lastPosition = -1;  // Initialized to an impossible value
 
 void setup() {
   Serial.begin(115200);
-
+  
+// setup Screen
   tft.begin();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
   tft.setSwapBytes(true);
-
+  // Show Logo
   tft.pushImage(30, 60, logoWidth, logoHeight, logo_momysnow);
+  //TEXT
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Set the font color AND the background color
+  tft.setTextWrap(true);                   // Wrap on width
+  // Load the large font
+  tft.loadFont(AA_FONT_LARGE);
 
+// setup dht
   dht.begin();
 
-  //create a task Client
-  xTaskCreatePinnedToCore(
-    handleClientTask, /* Task function. */
-    "Client",         /* name of task. */
-    10000,            /* Stack size of task */
-    NULL,             /* parameter of the task */
-    10,               /* priority of the task */
-    &Client,          /* Task handle to keep track of created task */
-    0                 /* pin task to core 0 */
-  );
+// create TASK
+  // create a task Client
+  xTaskCreatePinnedToCore(handleClientTask, "Client", 10000, NULL, 10, &Client, 0);
+  // create a task Animation
+  xTaskCreatePinnedToCore(AnimationTask, "Animation", 10000, NULL, 9,&Animation, 0);
+  // create a task DHT11
+  xTaskCreatePinnedToCore(DHT11Task, "DHT11", 10000, NULL, 1, &DHT11sensor, 0);
 
-  //create a task Animation
-  xTaskCreatePinnedToCore(
-    AnimationTask, /* Task function. */
-    "Animation",   /* name of task. */
-    10000,         /* Stack size of task */
-    NULL,          /* parameter of the task */
-    9,             /* priority of the task */
-    &Animation,    /* Task handle to keep track of created task */
-    0              /* pin task to core 0 */
-  );
-
-  //create a task DHT11
-  xTaskCreatePinnedToCore(
-    DHT11Task,    /* Task function. */
-    "DHT11",      /* name of task. */
-    10000,        /* Stack size of task */
-    NULL,         /* parameter of the task */
-    1,            /* priority of the task */
-    &DHT11sensor, /* Task handle to keep track of created task */
-    0             /* pin task to core 0 */
-  );
-
+// setup SD
   SD_MMC.setPins(SD_MMC_CLK, SD_MMC_CMD, SD_MMC_D0);
   if (!SD_MMC.begin("/sdcard", true, true, SDMMC_FREQ_DEFAULT, 5)) {
     Serial.println("Card Mount Failed");
@@ -249,56 +84,47 @@ void setup() {
     Serial.println("No SD_MMC card attached");
     return;
   }
-
+  // create file if doesnt exist
   if (!existFile(SD_MMC, "/knownNetworks.csv")) {
-    //file inesistente
-    // crea file
+    // non-existent file
+    // create file
     writeFile(SD_MMC, "/knownNetworks.csv", "");
   }
 
+// setup servo
   ESP32PWM::allocateTimer(0);
   ESP32PWM::allocateTimer(1);
   ESP32PWM::allocateTimer(2);
   ESP32PWM::allocateTimer(3);
   // HEAD
   headServo.setPeriodHertz(50);
-  headServo.attach(servoPin, 1000, 2000);
+  headServo.attach(headServoPin, 1000, 2000);
   headServo.write(90);
   // PUSH_L
   pushLServo.setPeriodHertz(50);
-  pushLServo.attach(servoPin, 1000, 2000);
+  pushLServo.attach(pushLServoPin, 1000, 2000);
   pushLServo.write(90);
   // PUSH_R
   pushRServo.setPeriodHertz(50);
-  pushRServo.attach(servoPin, 1000, 2000);
+  pushRServo.attach(pushRServoPin, 1000, 2000);
   pushRServo.write(90);
   // ROTATE_L
   rotateLServo.setPeriodHertz(50);
-  rotateLServo.attach(servoPin, 1000, 2000);
+  rotateLServo.attach(rotateLServoPin, 1000, 2000);
   rotateLServo.write(90);
   // ROTATE_R
   rotateRServo.setPeriodHertz(50);
-  rotateRServo.attach(servoPin, 1000, 2000);
+  rotateRServo.attach(rotateRServoPin, 1000, 2000);
   rotateRServo.write(90);
   // BASE
   baseServo.setPeriodHertz(50);
-  baseServo.attach(servoPin, 1000, 2000);
+  baseServo.attach(baseServoPin, 1000, 2000);
   baseServo.write(90);
 
   delay(2000);
 
-  //TEXT
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Set the font color AND the background color
-  tft.setTextWrap(true);                   // Wrap on width
-
-  // Load the large font
-  tft.loadFont(AA_FONT_LARGE);
-
-  //WIFI
-  const char* ssid = "YourSSID";          // Replace with your WiFi SSID
-  const char* password = "YourPassword";  // Replace with your WiFi password
-
-  if (!connect_wifi(ssid, password)) {
+// wifi connection
+  if (!connect_wifi()) {
     Serial.println("Failed to connect to Wi-Fi, starting access point");
     start_ap();
     create_web_server();
@@ -360,6 +186,7 @@ void setup() {
     delay(5000);
   }
 
+// setup end
   tft.unloadFont();  // Remove the font to recover memory used
 
   tft.fillScreen(TFT_BLACK);
@@ -378,11 +205,7 @@ void handleClientTask(void* param) {
 
 void AnimationTask(void* param) {
   while (true) {
-    eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_WHITE);
-    eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_WHITE);
-    eyes.pushSprite(0, 0);
-    eyes.fillEllipse(x_eyeL, y_eyeL, w_eyes, h_eyes, TFT_BLACK);
-    eyes.fillEllipse(x_eyeR, y_eyeR, w_eyes, h_eyes, TFT_BLACK);
+    idle_eyes();
     delay(1000);
     wink_eyes();
 
@@ -391,10 +214,29 @@ void AnimationTask(void* param) {
 }
 
 void DHT11Task(void* param) {
+  const int temperaturaCritica = 30;  // critical threshold for temperature
+  const int umiditaCritica = 80;      // critical threshold for humidity
+
   while (true) {
-    dht.readTemperature();
-    dht.readHumidity();
-    delay(300000);  // 5min
+    float temperatura = dht.readTemperature();
+    float umidita = dht.readHumidity();
+
+    // Check if the temperature or humidity exceeds critical thresholds
+    if (temperatura > temperaturaCritica || umidita > umiditaCritica) {
+      // print image high temperature
+      tft.fillScreen(TFT_BLACK);
+      tft.pushImage(30, 60, high_temperatureWidth, high_temperatureHeight, high_temperature);
+
+      delay(2000);
+
+      // it goes into rest mode
+      esp_sleep_enable_timer_wakeup(300000000);  // Set the timer for 5 minutes
+      esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);  // Reactivate RTC
+      esp_light_sleep_start();
+      tft.fillScreen(TFT_BLACK);
+    }
+
+    delay(300000);  // Wait 5 minutes before reading again
   }
 }
 
@@ -402,33 +244,82 @@ void loop() {
   delay(50);
 }
 
-bool connect_wifi(const char* ssid, const char* password) {
+bool connect_wifi() {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   delay(100);
 
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-
-  WiFi.begin(ssid, password);
-
-  int retries = 0;
-  while (WiFi.status() != WL_CONNECTED && retries < 15) {
-    delay(500);
-    Serial.print(".");
-    retries++;
-  }
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
-    return true;
-  } else {
-    Serial.println("");
-    Serial.println("WiFi connection failed");
+  // Scan surrounding WiFi networks
+  int numNetworks = WiFi.scanNetworks();
+  if (numNetworks == 0) {
+    Serial.println("No WiFi networks detected. Connection failed.");
     return false;
   }
+
+  // Load known networks from the file
+  File file = SD_MMC.open("/knownNetworks.csv", FILE_READ);
+  if (!file) {
+    Serial.println("Error opening knownNetworks.csv");
+    return false;
+  }
+
+  String strongestSSID;
+  int strongestSignal = -100;  // Initialize with a very low value
+
+  // Processes the networks detected during the scan
+  for (int i = 0; i < numNetworks; i++) {
+    String currentSSID = WiFi.SSID(i);
+
+    // Check if the detected network is present in the known data
+    if (findSSIDInFile(SD_MMC, "/knownNetworks.csv", currentSSID.c_str())) {
+      // Try connecting to the current network
+      WiFi.begin(currentSSID.c_str(), "");  // Password not required for scanning
+      int retries = 0;
+      while (WiFi.status() != WL_CONNECTED && retries < 15) {
+        delay(500);
+        Serial.print(".");
+        retries++;
+      }
+
+      // If the connection is successful, check the signal
+      if (WiFi.status() == WL_CONNECTED) {
+        int currentSignal = WiFi.RSSI();
+        if (currentSignal > strongestSignal) {
+          strongestSignal = currentSignal;
+          strongestSSID = currentSSID;
+        }
+        WiFi.disconnect();
+      }
+    }
+  }
+  file.close();
+
+  // Check if at least one of the known networks has been found and try to connect
+  if (!strongestSSID.isEmpty()) {
+    Serial.println("");
+    Serial.print("Connecting to the strongest network: ");
+    Serial.println(strongestSSID);
+    WiFi.begin(strongestSSID.c_str(), "");  // Password not required for connection
+
+    int retries = 0;
+    while (WiFi.status() != WL_CONNECTED && retries < 15) {
+      delay(500);
+      Serial.print(".");
+      retries++;
+    }
+
+    if (WiFi.status() == WL_CONNECTED) {
+      Serial.println("");
+      Serial.println("WiFi connected");
+      Serial.print("IP address: ");
+      Serial.println(WiFi.localIP());
+      return true;
+    }
+  }
+
+  Serial.println("");
+  Serial.println("No known WiFi networks found. Connection failed.");
+  return false;
 }
 
 void scan_wifi() {
