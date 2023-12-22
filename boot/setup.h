@@ -10,6 +10,9 @@
 // DHT11
 #define dhtPin 11
 
+// touchPad
+#define touchPadHeadPin 3
+
 // Servo Motors
 #define headServoPin 9
 #define pushLServoPin 10

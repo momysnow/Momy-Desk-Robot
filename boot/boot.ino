@@ -9,6 +9,8 @@
 
 #include "microphone.h"
 
+#include "touchpad.h"
+
 #include "features.h"
 
 #include <Arduino.h>
@@ -20,7 +22,7 @@
 TaskHandle_t Client;
 TaskHandle_t Animation;
 TaskHandle_t DHT11sensor;
-TaskHandle_t CheckServo;
+TaskHandle_t TouchPad;
 
 // webserver
 WebServer server(80);
@@ -45,6 +47,8 @@ Servo baseServo;
 
 int pos = 0;
 int lastPosition = -1;  // Initialized to an impossible value
+
+touchPad touchPadHaed;
 
 void setup() {
   Serial.begin(115200);
@@ -72,6 +76,8 @@ void setup() {
   xTaskCreatePinnedToCore(AnimationTask, "Animation", 10000, NULL, 9,&Animation, 0);
   // create a task DHT11
   xTaskCreatePinnedToCore(DHT11Task, "DHT11", 10000, NULL, 1, &DHT11sensor, 0);
+  // create a task TouchPad
+  xTaskCreatePinnedToCore(TouchTask, "TouchPad", 500, NULL, 1, &TouchPad, 0);
 
 // setup SD
   SD_MMC.setPins(SD_MMC_CLK, SD_MMC_CMD, SD_MMC_D0);
@@ -122,6 +128,9 @@ void setup() {
   baseServo.write(90);
 
   delay(2000);
+
+// Setup touchPad
+  touchPadInit(&touchPadHaed, touchPadHeadPin);
 
 // wifi connection
   if (!connect_wifi()) {
@@ -210,6 +219,18 @@ void AnimationTask(void* param) {
     wink_eyes();
 
     delay(200);
+  }
+}
+
+void TouchTask(void* param) {
+  while (true) {
+    touchPadScan(&touchPadHaed);
+    if (touchPad1.state == 1) {
+      //touched
+      //touch animation
+      //happiness++
+    }
+    delay(100);
   }
 }
 
