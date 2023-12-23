@@ -15,8 +15,6 @@ int y_eyeL = 30 + (sreenH - h_eyes) / 2;
 int x_eyeR = sreenW - ((sreenW - eyes_distance * 2 - w_eyes) / 2);
 int y_eyeR = 30 + (sreenH - h_eyes) / 2;
 
-#include "Animation.h"
-
 void idle_eyes() {
 
   // start animation
