@@ -68,24 +68,7 @@ void setup() {
 
   // setup dht
   dht.begin();
-  // setup SD
-  SD_MMC.setPins(SD_MMC_CLK, SD_MMC_CMD, SD_MMC_D0);
-  if (!SD_MMC.begin("/sdcard", true, true, SDMMC_FREQ_DEFAULT, 5)) {
-    Serial.println("Card Mount Failed");
-    return;
-  }
-  uint8_t cardType = SD_MMC.cardType();
-  if (cardType == CARD_NONE) {
-    Serial.println("No SD_MMC card attached");
-    return;
-  }
-  // create file if doesnt exist
-  if (!existFile(SD_MMC, "/knownNetworks.csv")) {
-    // non-existent file
-    // create file
-    writeFile(SD_MMC, "/knownNetworks.csv", "");
-  }
-
+  
   // setup servo
   ESP32PWM::allocateTimer(0);
   ESP32PWM::allocateTimer(1);
@@ -117,6 +100,24 @@ void setup() {
   baseServo.write(90);
 
   delay(2000);
+
+  // setup SD
+  SD_MMC.setPins(SD_MMC_CLK, SD_MMC_CMD, SD_MMC_D0);
+  if (!SD_MMC.begin("/sdcard", true, true, SDMMC_FREQ_DEFAULT, 5)) {
+    Serial.println("Card Mount Failed");
+    return;
+  }
+  uint8_t cardType = SD_MMC.cardType();
+  if (cardType == CARD_NONE) {
+    Serial.println("No SD_MMC card attached");
+    return;
+  }
+  // create file if doesnt exist
+  if (!existFile(SD_MMC, "/knownNetworks.csv")) {
+    // non-existent file
+    // create file
+    writeFile(SD_MMC, "/knownNetworks.csv", "");
+  }
 
   // wifi connection
   WiFi.mode(WIFI_STA);  // explicitly set mode, esp defaults to STA+AP
