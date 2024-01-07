@@ -8,18 +8,18 @@
 #define I2S_SCK 2
 
 // DHT11
-#define dhtPin 11
+#define dhtPin 39
 
 // touchPad
-#define touchPadHeadPin 3
+#define touchPadHeadPin 40
 
 // Servo Motors
-#define headServoPin 9
-#define pushLServoPin 10
-#define pushRServoPin 11
-#define rotateLServoPin 12
-#define rotateRServoPin 13
-#define baseServoPin 14  // control the pin is unused
+#define headServoPin 47
+#define pushLServoPin 48
+#define pushRServoPin 45
+#define rotateLServoPin 0
+#define rotateRServoPin 35
+#define baseServoPin 38
 
 // API
 //weather
