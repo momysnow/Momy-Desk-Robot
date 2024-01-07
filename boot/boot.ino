@@ -127,8 +127,16 @@ void setup() {
   wm.setConnectTimeout(90);              // Imposta il timeout di connessione a 90 secondi
   wm.setAPCallback(configModeCallback);  // Imposta la callback da chiamare quando il dispositivo è in modalità configurazione AP
 
+  // Ottieni l'ID del chip univoco per utilizzarlo come nome host, "Momy-" + chipId
+  // Ottieni l'ID del chip
+  for (int i = 0; i < 17; i = i + 8) {
+    chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+  }
+  // HOST
+  String host_name = "Momy-" + String(chipId);  // Crea il nome host
+
   bool res;
-  res = wm.autoConnect();  // anonymous ap
+  res = wm.autoConnect(host_name.c_str());  // ap
 
   // Provare a connettersi a tutte le reti WiFi memorizzate
   if (res) {
@@ -138,14 +146,7 @@ void setup() {
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());  // Stampa l'indirizzo IP assegnato al dispositivo
 
-    // Ottieni l'ID del chip univoco per utilizzarlo come nome host, "Momy-" + chipId
-    // Ottieni l'ID del chip
-    for (int i = 0; i < 17; i = i + 8) {
-      chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
-    }
-
-    String ota_host_name = "Momy-" + String(chipId);  // Crea il nome host per l'OTA (Over-The-Air) update
-    ArduinoOTA.setHostname(ota_host_name.c_str());    // Imposta il nome host per l'OTA
+    ArduinoOTA.setHostname(host_name.c_str());    // Imposta il nome host per l'OTA
     ArduinoOTA.begin();                               // Inizia il servizio OTA
 
     //TEXT
@@ -221,7 +222,7 @@ void setup() {
   // create a task DHT11
   xTaskCreatePinnedToCore(DHT11Task, "DHT11", 10000, NULL, 1, &DHT11sensor, 0);
   // create a task TouchPad
-  xTaskCreatePinnedToCore(TouchTask, "TouchPad", 500, NULL, 1, &TouchPad, 0);
+  xTaskCreatePinnedToCore(TouchTask, "TouchPad", 10000, NULL, 1, &TouchPad, 0);
 }
 
 void AnimationTask(void* param) {
