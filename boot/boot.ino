@@ -10,12 +10,9 @@
 #include "microphone.h"
 
 #include <Arduino.h>
-#include <EEPROM.h>
 
-// Indice nella EEPROM dove il valore sarà memorizzato
-int address = 0;
-// Leggi il valore dalla EEPROM
-int touchPadThreshold = EEPROM.read(address);
+#include <Preferences.h>
+Preferences preferences;
 
 #include <WiFiManager.h>
 #include <ArduinoOTA.h>
@@ -66,6 +63,8 @@ void setup() {
   // Load the large font
   tft.loadFont(AA_FONT_LARGE);
 
+  //touch
+  preferences.begin("touch", false);  // Apre le preferenze con il nome "touch", false indica che non è solo di lettura
   // setup dht
   dht.begin();
   // setup SD
@@ -146,8 +145,8 @@ void setup() {
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());  // Stampa l'indirizzo IP assegnato al dispositivo
 
-    ArduinoOTA.setHostname(host_name.c_str());    // Imposta il nome host per l'OTA
-    ArduinoOTA.begin();                               // Inizia il servizio OTA
+    ArduinoOTA.setHostname(host_name.c_str());  // Imposta il nome host per l'OTA
+    ArduinoOTA.begin();                         // Inizia il servizio OTA
 
     //TEXT
     String A = "Connected";
@@ -236,6 +235,14 @@ void AnimationTask(void* param) {
 }
 
 void TouchTask(void* param) {
+  // Legge il valore salvato precedentemente nella chiave "NTV"
+  int NTV = preferences.getInt("NTV", 0);
+
+  // Legge il valore salvato precedentemente nella chiave "TV"
+  int TV = preferences.getInt("TV", 0);
+
+  int touchPadThreshold = NTV + ((TV - NTV) /2);
+
   while (true) {
     if (touchRead(touchPadHeadPin) > touchPadThreshold) {
       //touched
