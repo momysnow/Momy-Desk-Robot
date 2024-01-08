@@ -16,9 +16,9 @@ const unsigned int sreenH = 240;
 #include <ESP32Servo.h>
 
 #include <Arduino.h>
-#include <EEPROM.h>
-int addr = 0;
-#define EEPROM_SIZE 4
+
+#include <Preferences.h>
+Preferences preferences;
 
 // servo
 Servo controlServo;
@@ -29,9 +29,7 @@ int lastPosition = -1;  // Initialized to an impossible value
 void setup() {
   Serial.begin(115200);
 
-  if (!EEPROM.begin(EEPROM_SIZE)) {
-    Serial.println("failed to initialise EEPROM");
-  }
+  preferences.begin("touch", false);  // Apre le preferenze con il nome "touch", false indica che non è solo di lettura
 
   // setup Screen
   tft.begin();
@@ -96,12 +94,12 @@ void setup() {
 
   // calculate the average value by dividing the sum by the count
   int averageValue = sum / count;
-  
-  EEPROM.put(addr, averageValue);                 // write the value to the EEPROM
-  Serial.print("noTouchValue: ");
-  Serial.println(averageValue);
 
-  delay(3000);
+
+  // Salva un nuovo valore nella chiave "NTV"
+  preferences.putInt("NTV", averageValue);
+  Serial.println("Nuovo valore salvato in EEPROM: " + String(averageValue));
+
   tft.fillScreen(TFT_BLACK);
   delay(100);
 
@@ -134,15 +132,13 @@ void setup() {
 
   // calculate the average value by dividing the sum by the count
   averageValue = sum / count;
-  // write the average value to the next EEPROM address
-  EEPROM.put(addr + 2, averageValue);
-  // print the average value
-  Serial.println("");
-  Serial.print("averageValue: ");
-  Serial.println(averageValue);
+  
+  // Salva un nuovo valore nella chiave "NTV"
+  preferences.putInt("TV", averageValue);
+  Serial.println("Nuovo valore salvato in EEPROM: " + String(averageValue));
 
-  delay(3000);
   tft.fillScreen(TFT_BLACK);
+  delay(100);
 
   // SHOW IMG SAVE
   tft.pushImage((240 - saveWidth) / 2, (240 - saveHeight) / 2, saveWidth, saveHeight, save_fill);
