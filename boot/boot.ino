@@ -17,6 +17,11 @@ Preferences preferences;
 #include <WiFiManager.h>
 #include <ArduinoOTA.h>
 
+//ADDED*******************************************
+#include <PubSubClient.h>
+#include <SimpleTimer.h>
+//************************************************
+
 // task
 TaskHandle_t Animation;
 TaskHandle_t DHT11sensor;
@@ -43,6 +48,20 @@ Servo pushRServo;
 Servo rotateLServo;
 Servo rotateRServo;
 Servo baseServo;
+
+//Added**********************************************************
+//mqtt
+// Add your MQTT Broker IP address, example:
+const char* mqtt_server = "192.168.1.121";
+WiFiClient espClient;
+PubSubClient client(espClient);
+long lastMsg = 0;
+char msg[50];
+int value = 0;
+
+// Create a mqtt checkin simple timer
+SimpleTimer mqttCheckinTimer;
+//****************************************************************
 
 int pos = 0;
 int lastPosition = -1;  // Initialized to an impossible value
@@ -204,6 +223,12 @@ void setup() {
     tft.setCursor(centerX2, centerY2);
     tft.println(C);
 
+    //ADDED**************************************************************
+    //mqtt
+    client.setServer(mqtt_server, 1883);
+    client.setCallback(mqttcallback);
+    //*******************************************************************
+    
     // Procedi con altre operazioni di setup/inizializzazione
   }
 
@@ -281,6 +306,16 @@ void DHT11Task(void* param) {
 }
 
 void loop() {
+  //ADDED*****************************************************************
+  ArduinoOTA.handle(); // OTA programming handle
+  if (!client.connected()) { //mqtt connection handling
+    reconnect();
+  } else if (client.connected() && mqttCheckinTimer.isReady()) {                  // Check is ready a timer, send checkin to MQTT server
+    client.publish("momy-bot/checkIn", "OK");
+    mqttCheckinTimer.reset();                        // Reset a second timer
+  }
+  client.loop();
+  //************************************************************************
   delay(50);
 }
 
@@ -364,3 +399,65 @@ void configModeCallback(WiFiManager* myWiFiManager) {
 
   tft.fillScreen(TFT_BLACK);
 }
+//ADDED*************************************************************************************
+void reconnect() { //MQTT reconnect handle
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Attempt to connect
+    if (client.connect("momy-bot")) {
+      Serial.println("connected");
+      // Subscribe
+      client.subscribe("momy-bot/eyes");
+      Serial.println("MQTT Checkin Timer set for 5 minutes");
+      // Set checkin timer
+      mqttCheckinTimer.setInterval(300000); // 5 minutes
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
+}
+
+void mqttcallback(char* topic, byte* message, unsigned int length) {  //MQTT handle topic digestions
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(". Message: ");
+  String messageTemp;
+  
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)message[i]);
+    messageTemp += (char)message[i];
+  }
+  Serial.println();
+
+  // Feel free to add more if statements to control more GPIOs with MQTT
+
+  // If a message is received on the topic esp32/output, you check if the message is either "on" or "off". 
+  // Changes the output state according to the message
+  if (String(topic) == "momy-bot/eyes") {
+    Serial.print("Changing output to ");
+    if(messageTemp == "wink"){
+      Serial.println("wink");
+      wink_eyes();
+      delay(200);
+    }
+    else if(messageTemp == "sleep"){
+      Serial.println("sleep");
+      sleep_eyes();
+      delay(750);
+    }
+    else if(messageTemp == "close"){
+      Serial.println("close");
+      close_eyes();
+      delay(500);
+    }
+    else {
+      Serial.println(" -- UNKNOWN");
+    }
+  }
+}
+//*********************************************************************************************************************
