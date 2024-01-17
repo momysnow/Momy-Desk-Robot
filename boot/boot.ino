@@ -6,11 +6,10 @@
 #include <ESP32Servo.h>
 
 #include "esp_camera.h"
-const char *server_ip = "192.168.1.123";  // Sostituisci con l'indirizzo IP del tuo server Python
+const char* server_ip = "192.168.1.123";  // Sostituisci con l'indirizzo IP del tuo server Python
 const int server_port = 8000;             // Sostituisci con la porta del tuo server Python
 
 int frameRate = 30;
-
 
 #include "animation.h"
 
@@ -18,11 +17,21 @@ int frameRate = 30;
 
 #include <Arduino.h>
 
+#include <EEPROM.h>
+
+// Indice nella EEPROM dove il valore sarà memorizzato
+int address = 0;
+// Leggi il valore dalla EEPROM
+int touchPadThreshold = EEPROM.read(address);
+
 #include <Preferences.h>
 Preferences preferences;
 
 #include <WiFiManager.h>
 #include <ArduinoOTA.h>
+
+#include <PubSubClient.h>
+#include <SimpleTimer.h>
 
 // task
 SemaphoreHandle_t taskSyncPinSemaphore;
@@ -56,6 +65,18 @@ Servo baseServo;
 
 int pos = 0;
 int lastPosition = -1;  // Initialized to an impossible value
+
+//mqtt
+// Add your MQTT Broker IP address, example:
+const char* mqtt_server = "192.168.1.121";
+WiFiClient espClient;
+PubSubClient client(espClient);
+long lastMsg = 0;
+char msg[50];
+int value = 0;
+
+// Create a mqtt checkin simple timer
+SimpleTimer mqttCheckinTimer;
 
 void setup() {
   Serial.begin(115200);
@@ -216,6 +237,10 @@ void setup() {
     tft.setCursor(centerX2, centerY2);
     tft.println(C);
 
+    //mqtt
+    client.setServer(mqtt_server, 1883);
+    client.setCallback(mqttcallback);
+
     // Procedi con altre operazioni di setup/inizializzazione
   }
 
@@ -262,7 +287,7 @@ void TouchTask(void* param) {
   // Legge il valore salvato precedentemente nella chiave "TV"
   int TV = preferences.getInt("TV", 0);
 
-  int touchPadThreshold = NTV + ((TV - NTV) /2);
+  int touchPadThreshold = NTV + ((TV - NTV) / 2);
 
   while (true) {
     if (xSemaphoreTake(taskSyncPinSemaphore, portMAX_DELAY)) {
@@ -334,7 +359,7 @@ void StreamingTask(void* param) {
     if (client.connect(server_ip, server_port)) {
       Serial.println("Connected to server");
 
-      camera_fb_t *fb = esp_camera_fb_get();
+      camera_fb_t* fb = esp_camera_fb_get();
       if (fb) {
         // Rest of your streaming task code...
       } else {
@@ -353,6 +378,15 @@ void StreamingTask(void* param) {
 }
 
 void loop() {
+  ArduinoOTA.handle(); // OTA programming handle
+  if (!client.connected()) { //mqtt connection handling
+    reconnect();
+  } else if (client.connected() && mqttCheckinTimer.isReady()) {                  // Check is ready a timer, send checkin to MQTT server
+    client.publish("momy-bot/checkIn", "OK");
+    mqttCheckinTimer.reset();                        // Reset a second timer
+  }
+  client.loop();
+
   delay(50);
 }
 
@@ -437,6 +471,66 @@ void configModeCallback(WiFiManager* myWiFiManager) {
   tft.fillScreen(TFT_BLACK);
 }
 
+void reconnect() { //MQTT reconnect handle
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Attempt to connect
+    if (client.connect("momy-bot")) {
+      Serial.println("connected");
+      // Subscribe
+      client.subscribe("momy-bot/eyes");
+      Serial.println("MQTT Checkin Timer set for 5 minutes");
+      // Set checkin timer
+      mqttCheckinTimer.setInterval(300000); // 5 minutes
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
+}
+
+void mqttcallback(char* topic, byte* message, unsigned int length) {  //MQTT handle topic digestions
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(". Message: ");
+  String messageTemp;
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)message[i]);
+    messageTemp += (char)message[i];
+  }
+   Serial.println();
+
+  // Feel free to add more if statements to control more GPIOs with MQTT
+
+  // If a message is received on the topic esp32/output, you check if the message is either "on" or "off". 
+  // Changes the output state according to the message
+  if (String(topic) == "momy-bot/eyes") {
+    Serial.print("Changing output to ");
+    if(messageTemp == "wink"){
+      Serial.println("wink");
+      wink_eyes();
+      delay(200);
+    }
+    else if(messageTemp == "sleep"){
+      Serial.println("sleep");
+      sleep_eyes();
+      delay(750);
+    }
+    else if(messageTemp == "close"){
+      Serial.println("close");
+      close_eyes();
+      delay(500);
+    }
+    else {
+      Serial.println(" -- UNKNOWN");
+    }
+  }
+}
+
 void cameraSetup() {
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -459,15 +553,15 @@ void cameraSetup() {
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.frame_size = FRAMESIZE_HVGA;
-  config.pixel_format = PIXFORMAT_JPEG; // for streaming
+  config.pixel_format = PIXFORMAT_JPEG;  // for streaming
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
   config.jpeg_quality = 10;
   config.fb_count = 1;
-  
+
   // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
   // for larger pre-allocated frame buffer.
-  if(psramFound()){
+  if (psramFound()) {
     config.jpeg_quality = 10;
     config.fb_count = 2;
     config.grab_mode = CAMERA_GRAB_LATEST;
@@ -484,30 +578,30 @@ void cameraSetup() {
     return;
   }
 
-  sensor_t * s = esp_camera_sensor_get();
+  sensor_t* s = esp_camera_sensor_get();
   // initial sensors are flipped vertically and colors are a bit saturated
-  s->set_brightness(s, 0);     // -2 to 2
-  s->set_contrast(s, 0);       // -2 to 2
-  s->set_saturation(s, 0);     // -2 to 2
-  s->set_special_effect(s, 0); // 0 to 6 (0 - No Effect, 1 - Negative, 2 - Grayscale, 3 - Red Tint, 4 - Green Tint, 5 - Blue Tint, 6 - Sepia)
-  s->set_whitebal(s, 1);       // 0 = disable , 1 = enable
-  s->set_awb_gain(s, 1);       // 0 = disable , 1 = enable
-  s->set_wb_mode(s, 0);        // 0 to 4 - if awb_gain enabled (0 - Auto, 1 - Sunny, 2 - Cloudy, 3 - Office, 4 - Home)
-  s->set_exposure_ctrl(s, 1);  // 0 = disable , 1 = enable
-  s->set_aec2(s, 0);           // 0 = disable , 1 = enable
-  s->set_ae_level(s, 0);       // -2 to 2
-  s->set_aec_value(s, 300);    // 0 to 1200
-  s->set_gain_ctrl(s, 1);      // 0 = disable , 1 = enable
-  s->set_agc_gain(s, 0);       // 0 to 30
+  s->set_brightness(s, 0);                  // -2 to 2
+  s->set_contrast(s, 0);                    // -2 to 2
+  s->set_saturation(s, 0);                  // -2 to 2
+  s->set_special_effect(s, 0);              // 0 to 6 (0 - No Effect, 1 - Negative, 2 - Grayscale, 3 - Red Tint, 4 - Green Tint, 5 - Blue Tint, 6 - Sepia)
+  s->set_whitebal(s, 1);                    // 0 = disable , 1 = enable
+  s->set_awb_gain(s, 1);                    // 0 = disable , 1 = enable
+  s->set_wb_mode(s, 0);                     // 0 to 4 - if awb_gain enabled (0 - Auto, 1 - Sunny, 2 - Cloudy, 3 - Office, 4 - Home)
+  s->set_exposure_ctrl(s, 1);               // 0 = disable , 1 = enable
+  s->set_aec2(s, 0);                        // 0 = disable , 1 = enable
+  s->set_ae_level(s, 0);                    // -2 to 2
+  s->set_aec_value(s, 300);                 // 0 to 1200
+  s->set_gain_ctrl(s, 1);                   // 0 = disable , 1 = enable
+  s->set_agc_gain(s, 0);                    // 0 to 30
   s->set_gainceiling(s, (gainceiling_t)0);  // 0 to 6
-  s->set_bpc(s, 0);            // 0 = disable , 1 = enable
-  s->set_wpc(s, 1);            // 0 = disable , 1 = enable
-  s->set_raw_gma(s, 1);        // 0 = disable , 1 = enable
-  s->set_lenc(s, 1);           // 0 = disable , 1 = enable
-  s->set_hmirror(s, 0);        // 0 = disable , 1 = enable
-  s->set_vflip(s, 0);          // 0 = disable , 1 = enable
-  s->set_dcw(s, 1);            // 0 = disable , 1 = enable
-  s->set_colorbar(s, 0);       // 0 = disable , 1 = enable
+  s->set_bpc(s, 0);                         // 0 = disable , 1 = enable
+  s->set_wpc(s, 1);                         // 0 = disable , 1 = enable
+  s->set_raw_gma(s, 1);                     // 0 = disable , 1 = enable
+  s->set_lenc(s, 1);                        // 0 = disable , 1 = enable
+  s->set_hmirror(s, 0);                     // 0 = disable , 1 = enable
+  s->set_vflip(s, 0);                       // 0 = disable , 1 = enable
+  s->set_dcw(s, 1);                         // 0 = disable , 1 = enable
+  s->set_colorbar(s, 0);                    // 0 = disable , 1 = enable
 
   Serial.println("Camera configuration complete!");
 }
