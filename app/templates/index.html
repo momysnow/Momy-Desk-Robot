@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Page Title</title>
+    <link rel="stylesheet" href="../static/css/reset.css" />
+    <link rel="stylesheet" href="../static/css/style.css" />
+  </head>
+
+  <body>
+    <div id="left-side">
+      <img src="" alt="streaming video" id="live" />
+
+      <div id="chat_container">
+        <ul id="chat">
+          <li class="momy_message">Hello, how are you?</li>
+          <li class="user_message">Hi! I'm doing well, thanks for asking.</li>
+          <li class="momy_message">Did you finish your homework?</li>
+          <li class="user_message">Yes, I finished it earlier today.</li>
+        </ul>
+
+        <div id="chat_input">
+          <input type="text" id="message" name="message" />
+          <img src="../static/src/icon/send_plane_fill.svg" alt="Submit" />
+        </div>
+      </div>
+    </div>
+
+    <div id="right-side">
+      <div class="widget_bar">
+        <div class="widget wifi">
+          <img
+            style="height: 80%"
+            src="../static/src/icon/wifi_line.svg"
+            alt="settings_line"
+          />
+        </div>
+        <div class="widget notify">other es emotion or notify</div>
+        <div class="widget weather">
+          <img class="sun" src="../static/src/icon/sun.svg" alt="sun" />
+          <img class="cloud" src="../static/src/icon/cloud.svg" alt="cloud" />
+          <p id="temp-display" class="temp">nd</p>
+        </div>
+        <div class="widget settings">
+          <img src="../static/src/icon/settings_line.svg" alt="settings_line" />
+        </div>
+      </div>
+
+      <div class="grid-container">
+        <div class="grid-row">
+          <div id="upload_pg_btn" class="pages">
+            <img
+              src="../static/src/icon/arrow_right_fill.svg"
+              alt="arrow_right_fill"
+            />
+          </div>
+          <div id="coding_pg_btn" class="pages">
+            <img src="../static/src/icon/code_fill.svg" alt="code_fill" />
+          </div>
+        </div>
+        <div class="grid-row">
+          <div id="recognition_pg_btn" class="pages">
+            <img src="../static/src/icon/faceid_line.svg" alt="faceid_line" />
+          </div>
+          <div id="other_pg_btn" class="pages">
+            <img src="../static/src/icon/add_circle.svg" alt="add_circle" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        function updateTemperature() {
+          $.ajax({
+            url: "/weather/get_temperature", // Definisci un nuovo endpoint per ottenere la temperatura
+            type: "GET",
+            success: function (response) {
+              $("#temp-display").text(response.temp); // Aggiorna il valore della temperatura
+            },
+            error: function (error) {
+              console.log(
+                "Errore durante il recupero della temperatura:",
+                error
+              );
+            },
+          });
+        }
+        updateTemperature();
+        // Aggiorna la temperatura ogni 1 ora
+        setInterval(updateTemperature, 1000*60*60);
+      });
+    </script>
+  </body>
+</html>

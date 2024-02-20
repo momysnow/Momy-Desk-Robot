@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Page Title</title>
+    <link rel="stylesheet" href="../static/css/reset.css" />
+    <link rel="stylesheet" href="../static/css/style.css" />
+    <style>
+      body {
+        display: flex;
+        justify-content: center; /* Allinea orizzontalmente al centro */
+        align-items: center; /* Allinea verticalmente al centro */
+      }
+
+      form {
+        background-color: white;
+        height: 50dvh;
+        width: 40dvw;
+        border-radius: 20px;
+        padding: 50px;
+      }
+
+      select {
+        border: #b7d4ff 3px solid;
+        height: 70px;
+        width: 80%;
+        padding-left: 25px;
+        margin-left: 10%;
+        margin-top: 8dvh;
+        border-radius: 15px;
+        color: #b7d4ff;
+        font-weight: 500;
+        font-size: 130%;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+          sans-serif;
+      }
+
+      button {
+        border: #b7ffd7 3px solid;
+        background-color: white;
+        height: 70px;
+        width: 80%;
+        padding-left: 25px;
+        margin-left: 10%;
+        margin-top: 4dvh;
+        border-radius: 15px;
+        color: #74ffb3;
+        font-weight: 500;
+        font-size: 130%;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+          sans-serif;
+      }
+      button:hover {
+        background-color: #b7ffd7;
+        color: white;
+      }
+
+      p {
+        color: #b7d4ff;
+        font-weight: 500;
+        font-size: 10dvh;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+          sans-serif;
+      }
+
+      /* Stile per il modal */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100dvw;
+        height: 100dvh;
+        overflow: hidden;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+
+      /* Stile per il contenuto del modal */
+      .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 20px;
+        border-radius: 20px;
+        width: 30%;
+        
+        p {
+          color: #2079ff;
+          font-weight: 500;
+          font-size: 3dvh;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+            Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+            sans-serif;
+        }
+
+        button {
+          border: #b7d4ff 3px solid;
+          background-color: white;
+          height: 40px;
+          width: 60%;
+          padding-left: 25px;
+          margin-left: 10%;
+          margin-top: 4dvh;
+          border-radius: 10px;
+          color: #b7d4ff;
+          font-weight: 500;
+          font-size: 130%;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+            Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+            sans-serif;
+        }
+        button:hover {
+          background-color: #b7d4ff;
+          color: white;
+        }
+      }
+
+      /* Stile per il pulsante di chiusura */
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <form action="/install/firmware" method="post">
+      <p>Choose the port of momy</p>
+      <select
+        id="selected_port"
+        name="selected_port"
+        aria-label="Default select example"
+      >
+        <option selected>Loading...</option>
+      </select>
+      <button type="submit">Go</button>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      // Array per memorizzare le porte selezionate
+      let selectedPorts = [];
+
+      // Funzione per installare i driver
+      function installDriver() {
+        fetch("/install/driver", {
+          method: "POST",
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            console.log(data);
+            // Aggiungi qui eventuali azioni da eseguire dopo l'installazione del driver
+            loadAvailablePorts();
+            setInterval(loadAvailablePorts, 5000);
+          })
+          .catch((error) =>
+            console.error("Errore durante l'installazione del driver:", error)
+          );
+      }
+
+      // Funzione per ottenere le porte disponibili dal server
+      function loadAvailablePorts() {
+        fetch("/serial/get_available_ports")
+          .then((response) => response.json())
+          .then((data) => {
+            const portSelect = document.getElementById("selected_port");
+            const previouslySelected = Array.from(
+              portSelect.selectedOptions
+            ).map((option) => option.value);
+
+            portSelect.innerHTML = ""; // Cancella le opzioni precedenti
+            // Aggiungi le nuove opzioni
+            Object.keys(data).forEach((portName) => {
+              const option = document.createElement("option");
+              option.value = portName;
+              option.textContent = portName;
+              portSelect.appendChild(option);
+            });
+
+            // Rimetti le porte selezionate se presenti nelle nuove opzioni
+            previouslySelected.forEach((portName) => {
+              if (data.hasOwnProperty(portName)) {
+                selectedPorts.push(portName);
+                portSelect.querySelector(
+                  `option[value='${portName}']`
+                ).selected = true;
+              }
+            });
+          })
+          .catch((error) =>
+            console.error("Errore durante il recupero delle porte:", error)
+          );
+      }
+
+      // Chiamata alla funzione all'avvio
+      $(document).ready(function () {
+        installDriver();
+      });
+    </script>
+
+    {% if error_message %}
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>
+          Si è verificato un errore. Premi OK per nascondere questo messaggio o
+          Altro per visualizzare ulteriori dettagli.
+        </p>
+        <button id="showDetailsButton">Altro</button>
+      </div>
+    </div>
+
+    <script>
+      window.onload = function () {
+        var errorMessage = "{{ error_message }}";
+
+        // Mostra il modal
+        var modal = document.getElementById("myModal");
+        modal.style.display = "block";
+
+        // Chiudi il modal quando l'utente clicca sulla "X" o fuori dal modal
+        var closeButton = document.getElementsByClassName("close")[0];
+        closeButton.onclick = function () {
+          modal.style.display = "none";
+        };
+        window.onclick = function (event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        };
+
+        // Mostra l'errore completo quando l'utente preme "Altro"
+        document.getElementById("showDetailsButton").onclick = function () {
+          alert(errorMessage);
+        };
+      };
+    </script>
+    {% endif %}
+  </body>
+</html>

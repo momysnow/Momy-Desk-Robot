@@ -1,0 +1,255 @@
+:root {
+  /*color*/
+  --gey-light: #f5f5f5;
+  --blue-light: #93d3ff;
+  --blue: #4874f1;
+  /*setting*/
+  --radius: 25px;
+}
+
+body {
+  height: calc(100dvh - 100px);
+  width: calc(100dvw - 100px);
+  margin: 0px;
+  display: block;
+  overflow: hidden;
+  display: inline-flex;
+  padding: 50px;
+  gap: 70px;
+  background-color: #f2f9ff;
+  background-image: url("../src/background/ooorganize_blue.svg");
+  background-repeat: repeat; /* o repeat-x o repeat-y a seconda della direzione di ripetizione desiderata */
+  background-size: 25%; /* regola la dimensione dell'immagine rispetto al contenitore, ad esempio 50% la rende la metà del contenitore */
+}
+
+@media only screen and (max-width: 1500px) {
+  body {
+    height: calc(100dvh - 80px);
+    width: calc(100dvw - 80px);
+    padding: 40px;
+    gap: 40px;
+  }
+}
+
+@media only screen and (max-width: 800px) {
+  body {
+    height: calc(100dvh - 40px);
+    width: calc(100dvw - 40px);
+    padding: 20px;
+    gap: 20px;
+  }
+}
+
+.pages {
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  background: white;
+}
+
+.grid-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: calc(92% - 20px);
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.grid-row {
+  display: flex;
+  width: 100%;
+  height: 50%;
+  gap: 20px;
+}
+
+.pages {
+  flex-grow: 1; /* Tutti gli elementi occupano lo stesso spazio disponibile */
+  display: flex;
+  align-items: center;
+}
+
+#live {
+  height: 50%;
+  width: 100%;
+  border-radius: 0px 0 var(--radius) var(--radius);
+  background: white;
+}
+
+#chat_container {
+  height: calc(48% - 20px);
+  padding: 10px;
+}
+
+#chat_input {
+  width: 100%;
+  height: 12%;
+  display: inline-flex;
+  gap: 20px;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+
+  input {
+    height: 100%;
+    width: 100%;
+  }
+
+  img {
+    width: 3.5%;
+    height: auto;
+    vertical-align: middle;
+    margin-right: 1%;
+  }
+}
+
+#chat {
+  width: 100%;
+  height: 90%;
+  list-style-type: none;
+  padding: 20;
+  overflow-y: auto;
+}
+
+.momy_message {
+  align-self: flex-start; /* Allinea il messaggio di momy in alto (a sinistra) */
+  background-color: var(
+    --gey-light
+  ); /* Aggiungi un colore di sfondo per differenziare i messaggi */
+  margin: 5px 0; /* Margini per spaziare i messaggi */
+  max-width: 70%; /* Larghezza massima del messaggio */
+  min-width: 20%; /* Larghezza minima del messaggio */
+}
+
+.user_message {
+  align-self: flex-start; /* Allinea il messaggio dell'utente in alto (a destra) */
+  background-color: var(
+    --gey-light
+  ); /* Aggiungi un colore di sfondo per differenziare i messaggi */
+  margin: 5px auto 5px auto; /* Margini per spaziare i messaggi, con auto a sinistra e destra */
+  max-width: 70%; /* Larghezza massima del messaggio */
+  min-width: 20%; /* Larghezza minima del messaggio */
+  margin-left: auto; /* Allinea il messaggio dell'utente a destra */
+}
+
+.widget_bar {
+  width: calc(100% - 60px);
+  height: 8%;
+  display: inline-flex;
+  gap: 20px;
+}
+
+.widget {
+  border-radius: calc(var(--radius) - 10px);
+  background: white;
+  width: auto;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.widget.weather {
+  width: calc(10dvh + 20%);
+  font-size: 5dvh;
+  background: linear-gradient(94deg, #93d3ff 0%, #4874f1 100%);
+  overflow: hidden;
+  position: relative;
+
+  .sun {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(-20%, -80%);
+    width: 40%;
+  }
+
+  .cloud {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(25%, -35%);
+    width: 40%;
+  }
+
+  .temp {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    max-height: 100%;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.76);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+  }
+}
+
+.widget.notify {
+  width: calc(55% - 10dvh);
+}
+
+.widget.wifi {
+  width: 15%;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+}
+
+.widget.settings {
+  width: 10%;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+
+  img {
+    height: 80%;
+  }
+}
+
+#left-side {
+  margin: 0px;
+  display: block;
+  border-radius: var(--radius);
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  background-color: white;
+}
+
+#right-side {
+  width: 50%;
+  height: 100%;
+  display: block;
+}
+
+#upload_pg_btn {
+  background-image: url("../src/background/gggrain_green.svg");
+  background-size: cover; /* Per coprire l'intera area */
+  background-repeat: no-repeat; /* Per evitare la ripetizione dell'immagine */
+
+  img {
+    margin-left: 12px;
+    margin-right: 100px;
+  }
+}
+#coding_pg_btn {
+  background-image: url("../src/background/gggrain_blue-green.svg");
+  background-size: cover; /* Per coprire l'intera area */
+  background-repeat: no-repeat; /* Per evitare la ripetizione dell'immagine */
+  justify-content: center; /* Centra orizzontalmente */
+}
+#recognition_pg_btn {
+  background-image: url("../src/background/gggrain_red-blue.svg");
+  background-size: cover; /* Per coprire l'intera area */
+  background-repeat: no-repeat; /* Per evitare la ripetizione dell'immagine */
+  justify-content: center; /* Centra orizzontalmente */
+}
+#other_pg_btn {
+  background-image: url("../src/background/gggrain_grey.svg   ");
+  background-size: cover; /* Per coprire l'intera area */
+  background-repeat: no-repeat; /* Per evitare la ripetizione dell'immagine */
+  justify-content: center; /* Centra orizzontalmente */
+  img {
+    margin-left: 50px;
+    margin-right: 50px;
+  }
+}

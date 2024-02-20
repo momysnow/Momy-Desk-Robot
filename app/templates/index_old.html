@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot App</title>
+
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            background-color: #FAFBFC;
+            height: 100vh;
+        }
+
+        #left-side, #right-side {
+            width: 50%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #right-side {
+            background-color: red;
+        }
+
+        #monitor {
+            width: 95%;
+            height: 95%;
+            border-radius: 35px;
+            background-color: #FFF;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #live {
+            width: 100%;
+            height: auto;
+        }
+
+        #chat-container {
+            width: 100%;
+            height: 50%;
+        }
+
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #input-container {
+            height: 30px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #chat {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        .user_message, .bot_message {
+            width: 95%;
+            height: 20px;
+            margin-top: 20px;
+        }
+
+        .user_message {
+            background-color: gray;
+        }
+
+        .bot_message {
+            background-color: blue;
+        }
+
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 30%;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+
+</head>
+<body>
+    <div id="left-side">
+        <div id="monitor">
+            <img id="live" src="{{ url_for('video_feed') }}" alt="Video Stream">
+            <div id="chat-container">
+                <div id="chat"></div>
+                <div id="input-container">
+                    <input type="text" id="user-input" placeholder="Inserisci il tuo messaggio...">
+                    <button onclick="sendMessage()">Invia</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="right-side">
+    </div>
+
+    <script>
+        var user_message = '<div class="user_message">Utente: ';
+        var bot_message = '<div class="bot_message">Utente: ';
+
+        function sendMessage() {
+            var userMessage = document.getElementById('user-input').value;
+            document.getElementById('user-input').value = '';
+
+            var chatContainer = document.getElementById('chat');
+            chatContainer.innerHTML += user_message + userMessage + '</div>';
+
+            // Invia il messaggio dell'utente al server
+            fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'user_message=' + userMessage
+            })
+            .then(response => response.json())
+            .then(data => {
+                var botResponse = data.bot_response;
+                chatContainer.innerHTML += bot_message + botResponse + '</div>';
+                
+                // Scorrimento automatico verso l'ultimo messaggio
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            });
+            // Scorrimento automatico verso l'ultimo messaggio
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
