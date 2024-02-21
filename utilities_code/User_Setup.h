@@ -221,11 +221,11 @@
 // The hardware SPI can be mapped to any pins
 
 #define TFT_MOSI 42 // In some display driver board, it might be written as "SDA" and so on.
-#define TFT_SCLK 41
-#define TFT_CS   3  // Chip select control pin
-#define TFT_DC   46  // Data Command control pin
-#define TFT_RST  36  // Reset pin (could connect to Arduino RESET pin)
-#define TFT_BL   37  // LED back-light
+#define TFT_SCLK 2
+#define TFT_CS   1  // Chip select control pin
+#define TFT_DC   44  // Data Command control pin
+#define TFT_RST  -1 // Reset pin (could connect to Arduino RESET pin)
+#define TFT_BL   43  // LED back-light
 
 //#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
 
