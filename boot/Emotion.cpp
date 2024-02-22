@@ -14,8 +14,8 @@ void Emotion::begin(uint8_t happiness, uint8_t tiredness, uint8_t anger, uint8_t
 
 std::vector<uint8_t> Emotion::calculatePriority() {
   // Calcolo delle priorità in punteggi
-  int score_happiness = 100 - (static_cast<int>(happiness) * 10) 1 / 255 * (static_cast<int>(tiredness)*static_cast<int>(tiredness));
-  int score_tiredness = 1 / 255 * (static_cast<int>(tiredness)*static_cast<int>(tiredness));
+    int score_tiredness = 1 / 255 * (static_cast<int>(tiredness)*static_cast<int>(tiredness));
+  int score_happiness = (100 - (static_cast<int>(happiness) * 10) )/ score_tiredness;
   int score_anger = static_cast<int>(anger);
   int score_sadness = static_cast<int>(sadness);
   int score_fear = static_cast<int>(fear);
