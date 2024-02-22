@@ -14,6 +14,7 @@
 #include <EEPROM.h>
 #include <WiFiClient.h>
 #include "CameraUploader.h"
+#include "DisplayTools.h"
 
 // camera server stream
 const char* server_ip = "192.168.1.123";
@@ -49,38 +50,31 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define USMAX  2400 // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
 #define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
 
+// display
+DisplayTools display = DisplayTools();
 
 void setup() {
   Serial.begin(115200);
 
   // setup Screen
   Serial.println("setup Screen");
-  tft.begin();
-  Serial.println("setRotation");
-  tft.setRotation(0);
-  Serial.println("fillScreen");
-  tft.fillScreen(TFT_BLACK);
-  Serial.println("setSwapBytes");
-  tft.setSwapBytes(true);
-  // Show Logo
-  Serial.println("Show Logo");
-  tft.pushImage(30, 60, logoWidth, logoHeight, logo_momysnow);
+  display.begin();
+
+  // display logo
+  Serial.println("Display logo");
+  display.showLogo();
+
   // TEXT
-  Serial.println("Show text");
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Set the font color AND the background color
-  Serial.println("setTextColor");
-  tft.setTextWrap(true);  // Wrap on width
-  // Load the large font
-  Serial.println("Load font");
-  tft.loadFont(AA_FONT_LARGE);
+  Serial.println("setup text");
+  display.setupLargeText();
+
+  delay(1000);
+  display.writeThreeLinesOfText("Setting", "Up", "Devices");
 
   // touch
   Serial.println("setup touch");
   preferences.begin("touch", false);  // Apre le preferenze con il nome "touch", false indica che non è solo di lettura
 
-  // setup camera
-  Serial.println("setup camera");
-  camera.begin();
 
   // setup temp_sensor
   temp_sensor_config_t temp_sensor = TSENS_CONFIG_DEFAULT();
@@ -99,12 +93,14 @@ void setup() {
 
   delay(2000);
 
+  display.writeThreeLinesOfText("Wifi", "Connection", "Start");
+
   // wifi connection
   Serial.println("wifi connection start");
   WiFi.mode(WIFI_STA);  // explicitly set mode, esp defaults to STA+AP
   //WiFiManager, Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wm;                        // Crea un oggetto WiFiManager
-  wm.setConnectTimeout(90);              // Imposta il timeout di connessione a 90 secondi
+  wm.setConnectTimeout(30);              // Imposta il timeout di connessione a 90 secondi
   wm.setAPCallback(configModeCallback);  // Imposta la callback da chiamare quando il dispositivo è in modalità configurazione AP
 
   // Ottieni l'ID del chip univoco per utilizzarlo come nome host, "Momy-" + chipId
@@ -130,70 +126,22 @@ void setup() {
     ArduinoOTA.begin();                         // Inizia il servizio OTA
 
     //TEXT
-    String A = "Connected";
-    String B = "to";
-    String C = "Wi-Fi";
-    int ATextWidth = tft.textWidth(A);  // Get the width of the large text
-    int BTextWidth = tft.textWidth(B);  // Get the width of the large text
-    int CTextWidth = tft.textWidth(C);  // Get the width of the large text
-
-    int largeTextHeight = tft.fontHeight();  // Get the height of the large text
-
-    // Calculate the coordinates to center the text
-    int centerX = (tft.width() - ATextWidth) / 2;
-    int centerX1 = (tft.width() - BTextWidth) / 2;
-    int centerX2 = (tft.width() - CTextWidth) / 2;
-    int centerY = (tft.height() - largeTextHeight * 3) / 2;
-    int centerY1 = ((tft.height() - largeTextHeight * 3) / 2) + largeTextHeight;
-    int centerY2 = ((tft.height() - largeTextHeight * 3) / 2) + largeTextHeight * 2;
-
-    tft.fillScreen(TFT_BLACK);
-
-    // Print the large text centered on the screen
-    tft.setCursor(centerX, centerY);
-    tft.println(A);
-    tft.setCursor(centerX1, centerY1);
-    tft.println(B);
-    tft.setCursor(centerX2, centerY2);
-    tft.println(C);
+    display.writeThreeLinesOfText("Connected", "To", "Wi-Fi");
 
     //TEXT
-    A = "Name for";
-    B = "update";
-    C = ota_host_name;
-    ATextWidth = tft.textWidth(A);  // Get the width of the large text
-    BTextWidth = tft.textWidth(B);  // Get the width of the large text
-    CTextWidth = tft.textWidth(C);  // Get the width of the large text
-
-    largeTextHeight = tft.fontHeight();  // Get the height of the large text
-
-    // Calculate the coordinates to center the text
-    centerX = (tft.width() - ATextWidth) / 2;
-    centerX1 = (tft.width() - BTextWidth) / 2;
-    centerX2 = (tft.width() - CTextWidth) / 2;
-    centerY = (tft.height() - largeTextHeight * 3) / 2;
-    centerY1 = ((tft.height() - largeTextHeight * 3) / 2) + largeTextHeight;
-    centerY2 = ((tft.height() - largeTextHeight * 3) / 2) + largeTextHeight * 2;
-
-    tft.fillScreen(TFT_BLACK);
-
-    // Print the large text centered on the screen
-    tft.setCursor(centerX, centerY);
-    tft.println(A);
-    tft.setCursor(centerX1, centerY1);
-    tft.println(B);
-    tft.setCursor(centerX2, centerY2);
-    tft.println(C);
-
+    display.writeThreeLinesOfText("Name for", "update", ota_host_name);
     // Procedi con altre operazioni di setup/inizializzazione
   }
 
+  // only set up the camera AFTER we are connected to wifi!
+  // setup camera
+  Serial.println("setup camera");
+  camera.begin();
 
-  // setup end
-  tft.unloadFont();  // Remove the font to recover memory used
+  display.tearDownText();
 
-  tft.fillScreen(TFT_BLACK);
   delay(500);
+
   eyes.createSprite(240, 240);
 
   // Creare il semaforo
@@ -268,7 +216,7 @@ void temp_sensorTask(void* param) {
       // Check if the temperature or humidity exceeds critical thresholds
       if (temperatura > temperaturaCritica) {
         // print image high temperature
-        tft.fillScreen(TFT_BLACK);
+        display.clear();
         tft.pushImage(30, 60, high_temperatureWidth, high_temperatureHeight, high_temperature);
 
         vTaskDelay(2000);
@@ -277,7 +225,7 @@ void temp_sensorTask(void* param) {
         esp_sleep_enable_timer_wakeup(300000000);                         // Set the timer for 5 minutes
         esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);  // Reactivate RTC
         esp_light_sleep_start();
-        tft.fillScreen(TFT_BLACK);
+        display.clear();
       }
 
       // Rilascio il semaforo
@@ -314,60 +262,11 @@ void configModeCallback(WiFiManager* myWiFiManager) {
   String apSSID = myWiFiManager->getConfigPortalSSID();
 
   //TEXT
-  String A = "Failed";
-  String B = "to";
-  String C = "connect";
-  int ATextWidth = tft.textWidth(A);  // Get the width of the large text
-  int BTextWidth = tft.textWidth(B);  // Get the width of the large text
-  int CTextWidth = tft.textWidth(C);  // Get the width of the large text
-
-  int largeTextHeight = tft.fontHeight();  // Get the height of the large text
-
-  // Calculate the coordinates to center the text
-  int centerX = (tft.width() - ATextWidth) / 2;
-  int centerX1 = (tft.width() - BTextWidth) / 2;
-  int centerX2 = (tft.width() - CTextWidth) / 2;
-  int centerY = (tft.height() - largeTextHeight * 3) / 2;
-  int centerY1 = ((tft.height() - largeTextHeight * 3) / 2) + largeTextHeight;
-  int centerY2 = ((tft.height() - largeTextHeight * 3) / 2) + largeTextHeight * 2;
-
-  tft.fillScreen(TFT_BLACK);
-
-  // Print the large text centered on the screen
-  tft.setCursor(centerX, centerY);
-  tft.println(A);
-  tft.setCursor(centerX1, centerY1);
-  tft.println(B);
-  tft.setCursor(centerX2, centerY2);
-  tft.println(C);
+  display.writeThreeLinesOfText("Failed", "to", "Connect");
 
   //TEXT
-  A = "Connect";
-  B = "to";
-  C = apSSID;
-  ATextWidth = tft.textWidth(A);  // Get the width of the large text
-  BTextWidth = tft.textWidth(B);  // Get the width of the large text
-  CTextWidth = tft.textWidth(C);  // Get the width of the large text
-
-  largeTextHeight = tft.fontHeight();  // Get the height of the large text
-
-  // Calculate the coordinates to center the text
-  centerX = (tft.width() - ATextWidth) / 2;
-  centerX1 = (tft.width() - BTextWidth) / 2;
-  centerX2 = (tft.width() - CTextWidth) / 2;
-  centerY = (tft.height() - largeTextHeight * 3) / 2;
-  centerY1 = ((tft.height() - largeTextHeight * 3) / 2) + largeTextHeight;
-  centerY2 = ((tft.height() - largeTextHeight * 3) / 2) + largeTextHeight * 2;
-
-  tft.fillScreen(TFT_BLACK);
-
-  // Print the large text centered on the screen
-  tft.setCursor(centerX, centerY);
-  tft.println(A);
-  tft.setCursor(centerX1, centerY1);
-  tft.println(B);
-  tft.setCursor(centerX2, centerY2);
-  tft.println(C);
+  display.setupSmallText();
+  display.writeThreeLinesOfText("Connect", "to", apSSID);
 
   unsigned long startTime = millis();
 
@@ -384,7 +283,7 @@ void configModeCallback(WiFiManager* myWiFiManager) {
     ESP.restart();
   }
 
-  tft.fillScreen(TFT_BLACK);
+  display.clear();
 }
 
 void mqttcallback(char* topic, byte* message, unsigned int length) {  //MQTT handle topic digestions
