@@ -4,6 +4,7 @@
 #include <TFT_eSPI.h>
 #include "Logo.h"
 #include "high_temperature.h"
+#include "alarm.h"
 #include "NotoSansBold15.h"
 #include "NotoSansBold36.h"
 // The font names are arrays references, thus must NOT be in quotes ""
@@ -29,5 +30,7 @@ extern void idle_eyes();
 extern void close_eyes();
 extern void wink_eyes();
 extern void sleep_eyes();
+extern void high_temperature_anim();
+extern void alarm_anim();
 
 #endif

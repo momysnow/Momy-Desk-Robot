@@ -3,6 +3,26 @@
 // Time generated: 30/11/2023 02:49:02
 // Dimensions    : 55x108 pixels
 // Size          : 11.880 Bytes
+
+// TODO: consider using a generic struct that can wrap this
+// and other similar objects
+// like this:
+//
+// struct Image {
+//   String name;
+//   uint16_t width;
+//   uint16_t height;
+//   short image[];
+// };
+//
+// then make some master file that has can generate instances of this struct
+// based on functions
+// 
+// i would still keep the data stored separately in files like this
+// or possibly OTA images to the device at runtime and keep it out of the main code
+// this might make it easier for users to custom edit their Momy, too
+//
+
 const uint16_t high_temperatureWidth = 55;
 const uint16_t high_temperatureHeight = 108;
 

@@ -160,3 +160,15 @@ void sleep_eyes() {
   delay(350);
   eyes.fillRect(x_eyeR - 30, y_eyeR, w_eyes + 30, close_h_eyes, TFT_BLACK);
 }
+
+void high_temperature_anim() {
+  // print image high temperature
+  tft.fillScreen(TFT_BLACK);
+  tft.pushImage(30, 60, high_temperatureWidth, high_temperatureHeight, high_temperature);
+}
+
+void alarm_anim() {
+  // print image alarm
+  tft.fillScreen(TFT_BLACK);
+  tft.pushImage(30, 60, alarmWidth, alarmHeight, myAlarm);
+}

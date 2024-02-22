@@ -1,7 +1,29 @@
 #include "sd_read_write.h"
 
-void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
-  Serial.printf("Listing directory: %s\n", dirname);
+const char *SDManager::DEBUG_TAG = "SD";
+
+void SDManager::initSD() {
+  Serial.println("setup SD");
+  SD_MMC.setPins(SD_MMC_CLK, SD_MMC_CMD, SD_MMC_D0);
+  if (!SD_MMC.begin("/sdcard", true, true, SDMMC_FREQ_DEFAULT, 5)) {
+    Serial.println("Card Mount Failed");
+    return;
+  }
+  uint8_t cardType = SD_MMC.cardType();
+  if (cardType == CARD_NONE) {
+    Serial.println("No SD_MMC card attached");
+    return;
+  }
+  // create file if doesn't exist
+  if (!existFile(SD_MMC, "/knownNetworks.csv")) {
+    // non-existent file
+    // create file
+    writeFile(SD_MMC, "/knownNetworks.csv", "");
+  }
+}
+
+void SDManager::listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
+  Serial.printf("[%s] Listing directory: %s\n", DEBUG_TAG, dirname);
 
   File root = fs.open(dirname);
   if (!root) {
@@ -31,8 +53,8 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
   }
 }
 
-void createDir(fs::FS &fs, const char *path) {
-  Serial.printf("Creating Dir: %s\n", path);
+void SDManager::createDir(fs::FS &fs, const char *path) {
+  Serial.printf("[%s] Creating Dir: %s\n", DEBUG_TAG, path);
   if (fs.mkdir(path)) {
     Serial.println("Dir created");
   } else {
@@ -40,8 +62,8 @@ void createDir(fs::FS &fs, const char *path) {
   }
 }
 
-void removeDir(fs::FS &fs, const char *path) {
-  Serial.printf("Removing Dir: %s\n", path);
+void SDManager::removeDir(fs::FS &fs, const char *path) {
+  Serial.printf("[%s] Removing Dir: %s\n", DEBUG_TAG, path);
   if (fs.rmdir(path)) {
     Serial.println("Dir removed");
   } else {
@@ -49,7 +71,7 @@ void removeDir(fs::FS &fs, const char *path) {
   }
 }
 
-String readFile(fs::FS &fs, const char *path) {
+String SDManager::readFile(fs::FS &fs, const char *path) {
   Serial.printf("Reading file: %s\n", path);
 
   File file = fs.open(path);
@@ -67,7 +89,7 @@ String readFile(fs::FS &fs, const char *path) {
   return fileContent;
 }
 
-void writeFile(fs::FS &fs, const char *path, const char *message) {
+void SDManager::writeFile(fs::FS &fs, const char *path, const char *message) {
   Serial.printf("Writing file: %s\n", path);
 
   File file = fs.open(path, FILE_WRITE);
@@ -82,7 +104,7 @@ void writeFile(fs::FS &fs, const char *path, const char *message) {
   }
 }
 
-void appendFile(fs::FS &fs, const char *path, const char *message) {
+void SDManager::appendFile(fs::FS &fs, const char *path, const char *message) {
   Serial.printf("Appending to file: %s\n", path);
 
   File file = fs.open(path, FILE_APPEND);
@@ -97,7 +119,7 @@ void appendFile(fs::FS &fs, const char *path, const char *message) {
   }
 }
 
-void renameFile(fs::FS &fs, const char *path1, const char *path2) {
+void SDManager::renameFile(fs::FS &fs, const char *path1, const char *path2) {
   Serial.printf("Renaming file %s to %s\n", path1, path2);
   if (fs.rename(path1, path2)) {
     Serial.println("File renamed");
@@ -106,7 +128,7 @@ void renameFile(fs::FS &fs, const char *path1, const char *path2) {
   }
 }
 
-void deleteFile(fs::FS &fs, const char *path) {
+void SDManager::deleteFile(fs::FS &fs, const char *path) {
   Serial.printf("Deleting file: %s\n", path);
   if (fs.remove(path)) {
     Serial.println("File deleted");
@@ -115,7 +137,7 @@ void deleteFile(fs::FS &fs, const char *path) {
   }
 }
 
-void testFileIO(fs::FS &fs, const char *path) {
+void SDManager::testFileIO(fs::FS &fs, const char *path) {
   File file = fs.open(path);
   static uint8_t buf[512];
   size_t len = 0;
@@ -157,7 +179,7 @@ void testFileIO(fs::FS &fs, const char *path) {
 }
 
 // Funzione per cercare l'SSID nel file
-bool findSSIDInFile(fs::FS &fs, const char *path, const char *ssidToFind) {
+bool SDManager::findSSIDInFile(fs::FS &fs, const char *path, const char *ssidToFind) {
   File file = fs.open(path);
   if (!file) {
     Serial.println("Failed to open file for reading");
@@ -192,7 +214,7 @@ bool findSSIDInFile(fs::FS &fs, const char *path, const char *ssidToFind) {
   return false;
 }
 
-bool existFile(fs::FS &fs, const char *path) {
+bool SDManager::existFile(fs::FS &fs, const char *path) {
   Serial.printf("Check exist file: %s\n", path);
 
   File file = fs.open(path);
