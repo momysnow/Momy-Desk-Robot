@@ -1,7 +1,10 @@
 #ifndef DISPLAY_TOOLS_H
 #define DISPLAY_TOOLS_H
 
-#include "animation.h"
+#include "Eyes.h"
+#include "Logo.h"
+
+extern TFT_eSPI tft;
 
 class DisplayTools {
 public:
