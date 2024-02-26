@@ -1,8 +1,10 @@
 #include "DisplayTools.h"
-#include <Arduino.h>
 #include <math.h>
 
-DisplayTools::DisplayTools() {
+DisplayTools::DisplayTools(TFT_eSPI *tft, bool dark_mode, unsigned int w_screen, unsigned int h_screen) {
+  this->w_screen = w_screen;
+  this->h_screen = h_screen;
+  this->dark_mode = dark_mode;
 }
 
 void DisplayTools::begin() {

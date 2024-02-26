@@ -1,14 +1,10 @@
 #ifndef EYES_H
 #define EYES_H
 
-#include <TFT_eSPI.h>
-#include "NotoSansBold15.h"
-#include "NotoSansBold36.h"
-// The font names are arrays references, thus must NOT be in quotes ""
-#define AA_FONT_SMALL NotoSansBold15
-#define AA_FONT_LARGE NotoSansBold36
+#include "DisplayTools.h"
+extern TFT_eSPI tft;
 
-class Eyes{
+class Eyes : public DisplayTools{
   private:
     TFT_eSprite eyes;
     int w_eyes = 40;
@@ -16,8 +12,7 @@ class Eyes{
     int h_eyes_close = 10;
     int eyes_distance = 30; 
     int pupil_size = 8;
-    int x_eyeL, x_eyeR, y_eyes, w_screen, h_screen;
-    bool dark_mode;
+    int x_eyeL, x_eyeR, y_eyes;
     void draw_eye(int x, int y, int h = 0);
     void draw_eyes(int h = 0, bool circle = true);
     void draw_pupil(uint8_t rgb[3], bool left_eye = true, bool right_eye = true);
@@ -25,8 +20,7 @@ class Eyes{
     void eyes_rect();
 
   public:
-    TFT_eSPI tft;
-    Eyes(TFT_eSPI *tft, bool dark_mode = true, unsigned int w_screen = 240, unsigned int h_screen = 240);
+    Eyes(TFT_eSPI *tft);
     void idle_eyes();
     void close_eyes();
     void wink_eyes();

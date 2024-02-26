@@ -1,4 +1,3 @@
-#include "TFT_eSPI.h"
 #include "Eyes.h"
 
 uint8_t black[3] = {0,0,0};
@@ -7,22 +6,13 @@ uint8_t white[3] = {255,255,255};
 /**
  * @brief Constructor for the Eyes class.
  * 
- * @param tft Pointer to the TFT_eSPI object used for display.
- * @param dark_mode Indicates whether dark mode is enabled or not (default on).
- * @param w_screen Width of the screen (default 240).
- * @param h_screen Height of the screen (default 240).
- * 
  * This constructor initializes an Eyes object with the specified parameters.
  * It configures the position of the eyes based on the screen's width and height,
  * adjusting the eye distance and dark mode accordingly.
  * The eye coordinates and other parameters are calculated for a centered layout.
  */
 
-Eyes::Eyes(TFT_eSPI *tft, bool dark_mode, unsigned int w_screen, unsigned int h_screen): eyes(tft){
-  this->w_screen = w_screen;
-  this->h_screen = h_screen;
-  this->dark_mode = dark_mode;
-
+Eyes::Eyes(TFT_eSPI *tft): DisplayTools(tft), eyes(tft){
   x_eyeL = (w_screen - eyes_distance * 2 - w_eyes) / 2;
   x_eyeR = w_screen - x_eyeL;
 
