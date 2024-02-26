@@ -53,7 +53,12 @@ void Eyes::draw_pupil(uint8_t rgb[3], bool left_eye, bool right_eye){
  */
 
 void Eyes::draw_eye(int x, int y, int h){
-  eyes.fillEllipse(x, y, w_eyes, h_eyes + h, (dark_mode ? TFT_WHITE : TFT_BLACK));
+  if (h < -h_eyes) {
+    eyes_rect();
+    draw_pupil(white, false, false);
+  }else{
+    eyes.fillEllipse(x, y, w_eyes, h_eyes + h, (dark_mode ? TFT_WHITE : TFT_BLACK));
+  }
 }
 
 /**
@@ -71,12 +76,12 @@ void Eyes::draw_eyes(int h, bool pupil){
     eyes.fillScreen(TFT_BLACK);
     draw_eye(x_eyeR, y_eyes, h);
     draw_eye(x_eyeL, y_eyes, h);
-    if(pupil) draw_pupil(black);
+    if(pupil && h > -h_eyes) draw_pupil(black);
   }else{
     eyes.fillScreen(TFT_WHITE);
     draw_eye(x_eyeR, y_eyes, h);
     draw_eye(x_eyeL, y_eyes, h);
-    if(pupil) draw_pupil(white);
+    if(pupil && h > -h_eyes) draw_pupil(white);
   }
 }
 
@@ -111,17 +116,9 @@ void Eyes::eyes_rect(){
   if(dark_mode){
     eyes.fillRoundRect(x_eyeL - 40, y_eyes - 5, w_eyes + 40, h_eyes_close, 4, TFT_WHITE);
     eyes.fillRoundRect(x_eyeR - 40, y_eyes - 5, w_eyes + 40, h_eyes_close, 4, TFT_WHITE);
-    eyes.pushSprite(0, 0);
-    delay(350);
-    eyes.fillRoundRect(x_eyeL - 40, y_eyes - 5, w_eyes + 40, h_eyes_close, 4, TFT_BLACK);
-    eyes.fillRoundRect(x_eyeR - 40, y_eyes - 5, w_eyes + 40, h_eyes_close, 4, TFT_BLACK);
   }else{
     eyes.fillRoundRect(x_eyeL - 40, y_eyes - 5, w_eyes + 40, h_eyes_close, 4, TFT_BLACK);
     eyes.fillRoundRect(x_eyeR - 40, y_eyes - 5, w_eyes + 40, h_eyes_close, 4, TFT_BLACK);
-    eyes.pushSprite(0, 0);  
-    delay(350);
-    eyes.fillRoundRect(x_eyeL - 40, y_eyes - 5, w_eyes + 40, h_eyes_close, 4, TFT_WHITE);
-    eyes.fillRoundRect(x_eyeR - 40, y_eyes - 5, w_eyes + 40, h_eyes_close, 4, TFT_WHITE);
   }
 }
 

@@ -14,7 +14,7 @@ class Eyes : public DisplayTools{
     int pupil_size = 8;
     int x_eyeL, x_eyeR, y_eyes;
     void draw_eye(int x, int y, int h = 0);
-    void draw_eyes(int h = 0, bool circle = true);
+    void draw_eyes(int h = 0, bool pupil = true);
     void draw_pupil(uint8_t rgb[3], bool left_eye = true, bool right_eye = true);
     void clear_sprite(int h = 0);
     void eyes_rect();
