@@ -3,6 +3,7 @@
 #include "sd_read_write.h"
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
+#include "DisplayTools.h"
 #include "Eyes.h"
 #include "microphone.h"
 #include <PubSubClient.h>
@@ -14,7 +15,6 @@
 #include <EEPROM.h>
 #include <WiFiClient.h>
 #include "CameraUploader.h"
-#include "DisplayTools.h"
 
 //init tft
 TFT_eSPI tft = TFT_eSPI();
@@ -56,7 +56,7 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 // display
 DisplayTools display(&tft);
 //init eyes
-Eyes eyes(&tft);
+Eyes *eyes;
 
 void setup() {
   Serial.begin(115200);
@@ -69,6 +69,9 @@ void setup() {
   Serial.println("Display logo");
   display.showLogo();
   
+  // set dark mode (defaut true)
+  // display.setDarkMode(false); 
+  eyes = new Eyes(&tft, display.getDarkMode());
 
   // TEXT
   Serial.println("setup text");
@@ -148,8 +151,6 @@ void setup() {
 
   delay(500);
 
-  // eyes.createSprite(240, 240);
-
   // Creare il semaforo
   taskSyncPinSemaphore = xSemaphoreCreateBinary();
 
@@ -177,9 +178,9 @@ void StreamVideoTask(void* param) {
 
 void AnimationTask(void* param) {
   while (1) {
-    eyes.idle_eyes();
+    eyes->idle_eyes();
     delay(1000);
-    eyes.wink_eyes();
+    eyes->wink_eyes();
 
     delay(200);
   }
@@ -312,17 +313,17 @@ void mqttcallback(char* topic, byte* message, unsigned int length) {  //MQTT han
     Serial.print("Changing output to ");
     if(messageTemp == "wink"){
       Serial.println("wink");
-      eyes.wink_eyes();
+      eyes->wink_eyes();
       delay(200);
     }
     else if(messageTemp == "sleep"){
       Serial.println("sleep");
-      eyes.sleep_eyes();
+      eyes->sleep_eyes();
       delay(750);
     }
     else if(messageTemp == "close"){
       Serial.println("close");
-      eyes.close_eyes();
+      eyes->close_eyes();
       delay(500);
     }
     else {

@@ -14,11 +14,11 @@ extern TFT_eSPI tft;
 
 class DisplayTools {
   protected:
-    bool dark_mode;
+    bool dark_mode = true;
     int w_screen, h_screen;
 
   public:
-    DisplayTools(TFT_eSPI *tft, bool dark_mode = true, unsigned int w_screen = 240, unsigned int h_screen = 240);
+    DisplayTools(TFT_eSPI *tft, unsigned int w_screen = 240, unsigned int h_screen = 240);
     void begin();
     void clear();
     void stop();
@@ -26,6 +26,8 @@ class DisplayTools {
     void showLogo();
 
     void setupLargeText();
+    void setDarkMode(bool dark_mode);
+    bool getDarkMode() { return dark_mode; }
     void setupSmallText();
     void writeThreeLinesOfText(String A, String B, String C);
     void tearDownText();
