@@ -3,6 +3,9 @@
 // Time generated: 04/11/2023 16:35:07
 // Dimensions    : 167x97 pixels
 // Size          : 32.398 Bytes
+#ifndef LOGO_
+#define LOGO_
+#include <stdint.h>
 
 const uint16_t logoWidth = 167;
 const uint16_t logoHeight = 97;
@@ -16208,3 +16211,4 @@ const unsigned short logo_momysnow[0x3F47] = {
   0x0000,
   0x0000,
 };
+#endif

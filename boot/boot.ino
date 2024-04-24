@@ -1,9 +1,10 @@
 #include "setup.h"
-#include "driver/temp_sensor.h"
+// #include "driver/temp_sensor.h"
 #include "sd_read_write.h"
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
-#include "animation.h"
+#include "DisplayTools.h"
+#include "Eyes.h"
 #include "microphone.h"
 #include <PubSubClient.h>
 #include <SimpleTimer.h>
@@ -14,7 +15,9 @@
 #include <EEPROM.h>
 #include <WiFiClient.h>
 #include "CameraUploader.h"
-#include "DisplayTools.h"
+
+//init tft
+TFT_eSPI tft = TFT_eSPI();
 
 // camera server stream
 const char* server_ip = "192.168.1.123";
@@ -51,7 +54,9 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
 
 // display
-DisplayTools display = DisplayTools();
+DisplayTools display(&tft);
+//init eyes
+Eyes *eyes;
 
 void setup() {
   Serial.begin(115200);
@@ -63,6 +68,10 @@ void setup() {
   // display logo
   Serial.println("Display logo");
   display.showLogo();
+  
+  // set dark mode (defaut true)
+  // display.setDarkMode(false); 
+  eyes = new Eyes(&tft, display.getDarkMode());
 
   // TEXT
   Serial.println("setup text");
@@ -77,10 +86,10 @@ void setup() {
 
 
   // setup temp_sensor
-  temp_sensor_config_t temp_sensor = TSENS_CONFIG_DEFAULT();
-  temp_sensor.dac_offset = TSENS_DAC_L2;  // TSENS_DAC_L2 is default; L4(-40°C ~ 20°C), L2(-10°C ~ 80°C), L1(20°C ~ 100°C), L0(50°C ~ 125°C)
-  temp_sensor_set_config(temp_sensor);
-  temp_sensor_start();
+  // temp_sensor_config_t temp_sensor = TSENS_CONFIG_DEFAULT();
+  // temp_sensor.dac_offset = TSENS_DAC_L2;  // TSENS_DAC_L2 is default; L4(-40°C ~ 20°C), L2(-10°C ~ 80°C), L1(20°C ~ 100°C), L0(50°C ~ 125°C)
+  // temp_sensor_set_config(temp_sensor);
+  // temp_sensor_start();
 
   // setup SD
   SDManager::initSD();
@@ -142,8 +151,6 @@ void setup() {
 
   delay(500);
 
-  eyes.createSprite(240, 240);
-
   // Creare il semaforo
   taskSyncPinSemaphore = xSemaphoreCreateBinary();
 
@@ -154,7 +161,7 @@ void setup() {
   // create a task Animation
   xTaskCreatePinnedToCore(AnimationTask, "Animation", 10000, NULL, 9, &Animation, 1);
   // create a task temp_sensor
-  xTaskCreatePinnedToCore(temp_sensorTask, "temp_sensor", 8000, NULL, 1, &temp_sensor_handle, 1);
+  // xTaskCreatePinnedToCore(temp_sensorTask, "temp_sensor", 8000, NULL, 1, &temp_sensor_handle, 1);
   // create a task TouchPad
   xTaskCreatePinnedToCore(TouchTask, "TouchPad", 8000, NULL, 1, &TouchPad, 1);
   // create a task StreamVideo
@@ -171,9 +178,9 @@ void StreamVideoTask(void* param) {
 
 void AnimationTask(void* param) {
   while (1) {
-    idle_eyes();
+    eyes->idle_eyes();
     delay(1000);
-    wink_eyes();
+    eyes->wink_eyes();
 
     delay(200);
   }
@@ -211,13 +218,13 @@ void temp_sensorTask(void* param) {
   while (1) {
     if (xSemaphoreTake(taskSyncPinSemaphore, portMAX_DELAY)) {
       float temperatura = 0;
-      temp_sensor_read_celsius(&temperatura);
+      // temp_sensor_read_celsius(&temperatura);
 
       // Check if the temperature or humidity exceeds critical thresholds
       if (temperatura > temperaturaCritica) {
         // print image high temperature
         display.clear();
-        tft.pushImage(30, 60, high_temperatureWidth, high_temperatureHeight, high_temperature);
+        // tft.pushImage(30, 60, high_temperatureWidth, high_temperatureHeight, high_temperature);
 
         vTaskDelay(2000);
 
@@ -306,17 +313,17 @@ void mqttcallback(char* topic, byte* message, unsigned int length) {  //MQTT han
     Serial.print("Changing output to ");
     if(messageTemp == "wink"){
       Serial.println("wink");
-      wink_eyes();
+      eyes->wink_eyes();
       delay(200);
     }
     else if(messageTemp == "sleep"){
       Serial.println("sleep");
-      sleep_eyes();
+      eyes->sleep_eyes();
       delay(750);
     }
     else if(messageTemp == "close"){
       Serial.println("close");
-      close_eyes();
+      eyes->close_eyes();
       delay(500);
     }
     else {
